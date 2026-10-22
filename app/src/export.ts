@@ -1,0 +1,129 @@
+/**
+ * Les sorties : CSV, classeur Excel, note de calcul. PUR, sans DOM ; le
+ * telechargement vit dans `main.ts`.
+ */
+
+import { JETONS, csv, echapper, nombreFr } from 'aedificium-ui';
+import { LIBELLES_FAMILLES, type Options, type ProfilCombinaisons } from '../../src/index';
+import { classeurXlsx, type Cellule, type Feuille } from './xlsx';
+import { famillesPresentes, lignesDuTableau, rendreResultats, tableauActions, tableauEnveloppes, tableauGamma, type Resultat } from './vue';
+
+/** Cellule en texte de tableur francais : virgule decimale. */
+function texte(c: Cellule): string {
+  if (c === null) return '';
+  return typeof c === 'number' ? nombreFr(c, 4) : c;
+}
+
+/** CSV de toutes les combinaisons, une ligne par combinaison. */
+export function combinaisonsEnCsv(r: Resultat): string {
+  return csv(lignesDuTableau(r).map((l) => l.map(texte)));
+}
+
+/** Classeur : un onglet par famille, puis les actions et l'enveloppe. */
+export function combinaisonsEnXlsx(r: Resultat, profil: ProfilCombinaisons): Uint8Array {
+  const feuilles: Feuille[] = famillesPresentes(r.valeurs).map((f) => ({
+    nom: LIBELLES_FAMILLES[f].split(' (')[0],
+    lignes: lignesDuTableau(r, [f]),
+  }));
+
+  feuilles.push({
+    nom: 'Actions',
+    lignes: [
+      ['Id', 'Action', 'Nature', 'Categorie', 'Groupe', 'psi_0', 'psi_1', 'psi_2'],
+      ...r.actions.map((a): Cellule[] => {
+        const psi = a.nature === 'variable' ? profil.psi[a.categorie] : null;
+        return [
+          a.id,
+          a.nom,
+          a.nature,
+          a.nature === 'variable' ? a.categorie : '',
+          a.nature === 'variable' ? (a.groupe ?? '') : '',
+          psi?.psi0.valeur ?? null,
+          psi?.psi1.valeur ?? null,
+          psi?.psi2.valeur ?? null,
+        ];
+      }),
+    ],
+  });
+
+  if (r.nomsEffets.length > 0) {
+    feuilles.push({
+      nom: 'Enveloppes',
+      lignes: [
+        ['Famille', 'Extremum', ...r.nomsEffets.flatMap((n) => [n, `${n} : n°`])],
+        ...r.enveloppes.flatMap((env): Cellule[][] => [
+          [LIBELLES_FAMILLES[env.famille], 'max', ...env.max.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))],
+          [LIBELLES_FAMILLES[env.famille], 'min', ...env.min.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))],
+        ]),
+      ],
+    });
+  }
+
+  return classeurXlsx(feuilles);
+}
+
+const AIDE_AU_CALCUL =
+  "Outil d'aide au calcul. Cet outil constate, il ne prescrit pas : il forme les combinaisons, il ne " +
+  "choisit pas celle qui gouverne. Les coefficients dependent de l'annexe nationale ; il appartient a " +
+  "l'ingenieur de verifier que le profil actif correspond au texte applicable a son projet. Cette note " +
+  'est un compte rendu, pas une justification reglementaire signee.';
+
+const STYLE_NOTE = `${JETONS}
+  body { margin: 0; padding: 24px 28px; background: var(--surface); color: var(--texte); font: 13px/1.5 var(--sans); }
+  h1 { font-size: 1.15rem; font-weight: normal; margin: 0 0 .2rem; }
+  h2 { font-size: .95rem; font-weight: 600; margin: 1.5rem 0 .5rem; border-bottom: 1px solid var(--bordure); padding-bottom: .25rem; }
+  h3 { font-size: .82rem; font-weight: 600; margin: 1rem 0 .35rem; }
+  .date { color: var(--texte-faible); font-size: .8rem; margin: 0 0 1rem; }
+  table { border-collapse: collapse; width: 100%; margin: .3rem 0 .6rem; font-size: .78rem; }
+  td, th { border-bottom: 1px solid var(--bordure-douce); padding: .2rem .4rem; text-align: left; vertical-align: top; }
+  th { background: var(--surface-appui); font-weight: 600; }
+  td.valeur { font-family: var(--mono); text-align: right; white-space: nowrap; }
+  .clause, .extremum, .compte { color: var(--texte-faible); font-size: .75rem; font-weight: normal; }
+  .pied { margin-top: 2rem; padding-top: .6rem; border-top: 1px solid var(--bordure); color: var(--texte-doux); font-size: .78rem; }
+  ul { margin: .3rem 0 .6rem; padding-left: 1.1rem; color: var(--texte-doux); }
+  @media print { body { padding: 0; } h2 { page-break-after: avoid; } .famille { page-break-inside: avoid; } }
+`;
+
+/** Les options, en phrases. */
+export function optionsEnTexte(o: Options): string[] {
+  return [
+    o.formule === '6.10' ? 'ELU STR/GEO par l expression (6.10).' : 'ELU STR/GEO par la plus defavorable de (6.10a) et (6.10b).',
+    o.equ ? 'ELU EQU (jeu A) formees.' : 'ELU EQU non formees.',
+    o.geoC ? 'ELU GEO avec le jeu C formees (approches 1 et 3).' : 'ELU GEO avec le jeu C non formees.',
+    o.accidentelle
+      ? `Combinaisons accidentelles (6.11b), dominante a ${o.psiAccidentelle === 'psi1' ? 'psi_1' : 'psi_2'}.`
+      : 'Combinaisons accidentelles non formees.',
+    o.els ? 'Combinaisons de service formees.' : 'Combinaisons de service non formees.',
+    o.variablesFavorables
+      ? 'Chaque groupe d actions variables est aussi envisage absent (action favorable).'
+      : 'Toutes les actions variables sont supposees defavorables (presentes).',
+  ];
+}
+
+export const HYPOTHESES = [
+  'EN 1990:2002, annexe A1 (batiments) : expressions (6.10), (6.10a), (6.10b), (6.11b), (6.14b), (6.15b), (6.16b).',
+  'Les charges d exploitation des toits (categorie H) ne sont combinees ni avec la neige ni avec le vent (A1.2.1(3)).',
+  'Deux actions d un meme groupe d exclusion ne sont jamais simultanees.',
+  'Valeurs combinees par superposition lineaire des effets saisis : valable pour une analyse lineaire seulement.',
+  'Ni combinaisons sismiques (6.12b), ni actions de precontrainte, ni ponts (annexe A2).',
+];
+
+/** La note de calcul : les memes tableaux que l'ecran, dans le meme ordre. */
+export function noteDeCalculHtml(r: Resultat, profil: ProfilCombinaisons, options: Options, titre: string, date: string): string {
+  const enveloppe = tableauEnveloppes(r);
+  return `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8" />
+<title>Note de calcul — ${echapper(titre)}</title>
+<style>${STYLE_NOTE}</style></head>
+<body>
+<h1>Note de calcul — combinaisons d actions (EN 1990)</h1>
+<p class="date">${echapper(titre)} · ${echapper(date)} · profil : ${echapper(profil.nom)} (${echapper(profil.date)})</p>
+<h2>Actions</h2>${tableauActions(r.actions, profil)}
+<h2>Coefficients partiels</h2>${tableauGamma(profil)}
+<h2>Options</h2><ul>${optionsEnTexte(options).map((o) => `<li>${echapper(o)}</li>`).join('')}</ul>
+<h2>Combinaisons</h2>${rendreResultats(r)}
+${enveloppe === '' ? '' : `<h2>Enveloppes des effets</h2>${enveloppe}`}
+<h2>Hypotheses et limites</h2><ul>${HYPOTHESES.map((h) => `<li>${echapper(h)}</li>`).join('')}</ul>
+<p class="pied">${AIDE_AU_CALCUL}</p>
+</body></html>`;
+}
