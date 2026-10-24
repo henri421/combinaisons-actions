@@ -67,12 +67,6 @@ export function combinaisonsEnXlsx(r: Resultat, profil: ProfilCombinaisons): Uin
   return classeurXlsx(feuilles);
 }
 
-const AIDE_AU_CALCUL =
-  "Outil d'aide au calcul. Cet outil constate, il ne prescrit pas : il forme les combinaisons, il ne " +
-  "choisit pas celle qui gouverne. Les coefficients dependent de l'annexe nationale ; il appartient a " +
-  "l'ingenieur de verifier que le profil actif correspond au texte applicable a son projet. Cette note " +
-  'est un compte rendu, pas une justification reglementaire signee.';
-
 const STYLE_NOTE = `${JETONS}
   body { margin: 0; padding: 24px 28px; background: var(--surface); color: var(--texte); font: 13px/1.5 var(--sans); }
   h1 { font-size: 1.15rem; font-weight: normal; margin: 0 0 .2rem; }
@@ -84,7 +78,6 @@ const STYLE_NOTE = `${JETONS}
   th { background: var(--surface-appui); font-weight: 600; }
   td.valeur { font-family: var(--mono); text-align: right; white-space: nowrap; }
   .clause, .extremum, .compte { color: var(--texte-faible); font-size: .75rem; font-weight: normal; }
-  .pied { margin-top: 2rem; padding-top: .6rem; border-top: 1px solid var(--bordure); color: var(--texte-doux); font-size: .78rem; }
   ul { margin: .3rem 0 .6rem; padding-left: 1.1rem; color: var(--texte-doux); }
   @media print { body { padding: 0; } h2 { page-break-after: avoid; } .famille { page-break-inside: avoid; } }
 `;
@@ -129,6 +122,5 @@ export function noteDeCalculHtml(r: Resultat, profil: ProfilCombinaisons, option
 <h2>Combinaisons</h2>${rendreResultats(r)}
 ${enveloppe === '' ? '' : `<h2>Enveloppes des effets</h2>${enveloppe}`}
 <h2>Hypothèses et limites</h2><ul>${HYPOTHESES.map((h) => `<li>${notationHtml(h)}</li>`).join('')}</ul>
-<p class="pied">${AIDE_AU_CALCUL}</p>
 </body></html>`;
 }
