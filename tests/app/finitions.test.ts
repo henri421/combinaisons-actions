@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { NOMS_GRECS, constatsAffichage, contenuBalise, texteVisible } from 'aedificium-ui';
+import { NOMS_GRECS, notationHtml, constatsAffichage, contenuBalise, texteVisible } from 'aedificium-ui';
 import { combinerEffets, en1990Recommande, enveloppes, genererCombinaisons, OPTIONS_PAR_DEFAUT, type Options } from '../../src/index';
 import { lireModele, saisieParDefaut } from '../../app/src/modele';
 import { rendreResultats, tableauActions, tableauGamma, type Resultat } from '../../app/src/vue';
@@ -66,13 +66,13 @@ describe('texte visible : notations, arrondis, accents, phrases types', () => {
     expect(controler('page', lire('../../app/index.html'))).toEqual([]);
   });
 
-  it('messages d erreur affiches', () => {
+  it('messages d erreur affiches (rendus par notationHtml, comme a l ecran)', () => {
     const saisie = saisieParDefaut();
     saisie.nomsEffets = 'N ; M';
     saisie.actions[1].effets = ['', 'abc'];
     const l = lireModele(saisie);
     expect(l.ok).toBe(false);
-    if (!l.ok) expect(constatsAffichage(texteVisible(l.message))).toEqual([]);
+    if (!l.ok) expect(constatsAffichage(texteVisible(notationHtml(l.message)))).toEqual([]);
   });
 
   it('CSV : texte brut, ni « _ » ni nom de lettre grecque ni balise', () => {
