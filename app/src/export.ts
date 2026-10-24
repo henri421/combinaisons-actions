@@ -3,7 +3,7 @@
  * telechargement vit dans `main.ts`.
  */
 
-import { JETONS, csv, notationHtml, notationTexte, nombreFr } from 'aedificium-ui';
+import { JETONS, csv, notationHtml, notationTexte, nombreAffiche } from 'aedificium-ui';
 import { LIBELLES_FAMILLES, type Options, type ProfilCombinaisons } from '../../src/index';
 import { classeurXlsx, type Cellule, type Feuille } from './xlsx';
 import { famillesPresentes, lignesDuTableau, rendreResultats, tableauActions, tableauEnveloppes, tableauGamma, type Resultat } from './vue';
@@ -11,7 +11,7 @@ import { famillesPresentes, lignesDuTableau, rendreResultats, tableauActions, ta
 /** Cellule en texte de tableur francais : virgule decimale, notation brute. */
 function texte(c: Cellule): string {
   if (c === null) return '';
-  return typeof c === 'number' ? nombreFr(c, 4) : notationTexte(c);
+  return typeof c === 'number' ? nombreAffiche(c, 3) : notationTexte(c);
 }
 
 /** Texte d'une cellule pour le classeur : la notation source y devient du texte brut. */

@@ -258,9 +258,9 @@ function fondamentales(ctx: Contexte, famille: Famille, jeu: JeuGamma, variante:
 /** Combinaisons accidentelles (6.11b), une par action accidentelle. */
 function accidentelles(ctx: Contexte, accidents: ActionAccidentelle[], psiDominante: 'psi1' | 'psi2'): Array<Omit<Combinaison, 'numero'>> {
   const sortie: Array<Omit<Combinaison, 'numero'>> = [];
-  const perm: Terme[] = ctx.permanentes.map((p) => ({ action: p.id, coefficient: 1, detail: 'G_k (1,0)' }));
+  const perm: Terme[] = ctx.permanentes.map((p) => ({ action: p.id, coefficient: 1, detail: 'G_k (1)' }));
   for (const a of accidents) {
-    const ad: Terme = { action: a.id, coefficient: 1, detail: 'A_d (1,0)' };
+    const ad: Terme = { action: a.id, coefficient: 1, detail: 'A_d (1)' };
     for (const presentes of ctx.assignations) {
       const dominantes: Array<ActionVariable | null> = presentes.length === 0 ? [null] : presentes;
       for (const dominante of dominantes) {
@@ -287,7 +287,7 @@ function accidentelles(ctx: Contexte, accidents: ActionAccidentelle[], psiDomina
 
 /** Combinaisons de service (6.14b), (6.15b), (6.16b). Permanentes a 1,0. */
 function service(ctx: Contexte, famille: 'ELS-CAR' | 'ELS-FREQ' | 'ELS-QP'): Array<Omit<Combinaison, 'numero'>> {
-  const perm: Terme[] = ctx.permanentes.map((p) => ({ action: p.id, coefficient: 1, detail: 'G_k (1,0)' }));
+  const perm: Terme[] = ctx.permanentes.map((p) => ({ action: p.id, coefficient: 1, detail: 'G_k (1)' }));
   const expression = famille === 'ELS-CAR' ? '6.14b' : famille === 'ELS-FREQ' ? '6.15b' : '6.16b';
   const sortie: Array<Omit<Combinaison, 'numero'>> = [];
 
@@ -306,7 +306,7 @@ function service(ctx: Contexte, famille: 'ELS-CAR' | 'ELS-FREQ' | 'ELS-QP'): Arr
         ...presentes.map((v) => {
           if (v.id === dominante.id) {
             return famille === 'ELS-CAR'
-              ? { action: v.id, coefficient: 1, detail: 'Q_k (1,0, dominante)' }
+              ? { action: v.id, coefficient: 1, detail: 'Q_k (1, dominante)' }
               : { action: v.id, coefficient: psiDe(ctx, v, 'psi1'), detail: `psi_1 = ${fr(psiDe(ctx, v, 'psi1'))} (dominante)` };
           }
           const quel = famille === 'ELS-CAR' ? 'psi0' : 'psi2';

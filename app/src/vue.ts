@@ -6,7 +6,7 @@
  * Excel lisent `lignesDuTableau`, la meme matiere en cellules.
  */
 
-import { notationHtml, nombreFr } from 'aedificium-ui';
+import { notationHtml, nombreAffiche } from 'aedificium-ui';
 import {
   FAMILLES,
   LIBELLES_CATEGORIES,
@@ -33,7 +33,7 @@ export function messageDErreur(e: unknown): string {
 }
 
 function nombre(x: number | null, decimales = 3): string {
-  return x === null ? '—' : nombreFr(x, decimales);
+  return x === null ? '—' : nombreAffiche(x, Math.min(decimales, 3));
 }
 
 /** Libelle court d'une action dans les formules : son identifiant. */
@@ -55,9 +55,9 @@ export function tableauActions(actions: readonly Action[], profil: ProfilCombina
       const groupe = a.nature === 'variable' && a.groupe !== undefined ? a.groupe : '';
       return (
         `<tr><td>${notationHtml(a.id)}</td><td>${notationHtml(a.nom)}</td><td>${notationHtml(nature)}</td><td>${notationHtml(groupe)}</td>` +
-        `<td class="valeur">${psi === null ? '' : nombreFr(psi.psi0.valeur, 2)}</td>` +
-        `<td class="valeur">${psi === null ? '' : nombreFr(psi.psi1.valeur, 2)}</td>` +
-        `<td class="valeur">${psi === null ? '' : nombreFr(psi.psi2.valeur, 2)}</td></tr>`
+        `<td class="valeur">${psi === null ? '' : nombreAffiche(psi.psi0.valeur, 2)}</td>` +
+        `<td class="valeur">${psi === null ? '' : nombreAffiche(psi.psi1.valeur, 2)}</td>` +
+        `<td class="valeur">${psi === null ? '' : nombreAffiche(psi.psi2.valeur, 2)}</td></tr>`
       );
     })
     .join('');
@@ -70,15 +70,15 @@ export function tableauActions(actions: readonly Action[], profil: ProfilCombina
 /** Coefficients partiels du profil. */
 export function tableauGamma(profil: ProfilCombinaisons): string {
   const ligne = (nom: string, j: ProfilCombinaisons['jeuA']) =>
-    `<tr><td>${notationHtml(nom)}</td><td class="valeur">${nombreFr(j.gammaGSup.valeur, 2)}</td><td class="valeur">${nombreFr(j.gammaGInf.valeur, 2)}</td>` +
-    `<td class="valeur">${nombreFr(j.gammaQ.valeur, 2)}</td><td class="clause">${notationHtml(j.gammaQ.source)}</td></tr>`;
+    `<tr><td>${notationHtml(nom)}</td><td class="valeur">${nombreAffiche(j.gammaGSup.valeur, 2)}</td><td class="valeur">${nombreAffiche(j.gammaGInf.valeur, 2)}</td>` +
+    `<td class="valeur">${nombreAffiche(j.gammaQ.valeur, 2)}</td><td class="clause">${notationHtml(j.gammaQ.source)}</td></tr>`;
   return (
     '<div class="defilement"><table class="zones"><thead><tr><th>Jeu</th>' +
     `<th>${notationHtml('gamma_G,sup')}</th><th>${notationHtml('gamma_G,inf')}</th><th>${notationHtml('gamma_Q')}</th><th>Source</th></tr></thead><tbody>` +
     ligne('A, EQU', profil.jeuA) +
     ligne('B, STR/GEO', profil.jeuB) +
     ligne('C, GEO', profil.jeuC) +
-    `<tr><td>${notationHtml('xi (6.10b)')}</td><td class="valeur">${nombreFr(profil.xi.valeur, 2)}</td><td></td><td></td><td class="clause">${notationHtml(profil.xi.source)}</td></tr>` +
+    `<tr><td>${notationHtml('xi (6.10b)')}</td><td class="valeur">${nombreAffiche(profil.xi.valeur, 2)}</td><td></td><td></td><td class="clause">${notationHtml(profil.xi.source)}</td></tr>` +
     '</tbody></table></div>'
   );
 }
