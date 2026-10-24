@@ -6,7 +6,7 @@
  * mise en forme. L'ecran et la note appellent les memes fonctions de `vue`.
  */
 
-import { echapper, ouvrirOuTelecharger, telecharger } from 'aedificium-ui';
+import { echapper, notationHtml, ouvrirOuTelecharger, telecharger } from 'aedificium-ui';
 import {
   CATEGORIES,
   LIBELLES_CATEGORIES,
@@ -70,7 +70,7 @@ function memoriser(): void {
 // --- Editeur ----------------------------------------------------------------------
 
 function optionsCategorie(choisie: Categorie): string {
-  return CATEGORIES.map((c) => `<option value="${c}"${c === choisie ? ' selected' : ''}>${echapper(LIBELLES_CATEGORIES[c])}</option>`).join('');
+  return CATEGORIES.map((c) => `<option value="${c}"${c === choisie ? ' selected' : ''}>${notationHtml(LIBELLES_CATEGORIES[c])}</option>`).join('');
 }
 
 function ligneEditeur(l: LigneAction, i: number, noms: string[]): string {
@@ -99,7 +99,7 @@ function rendreEditeur(): void {
   const noms = nomsDesEffets(saisie);
   zones.editeur.innerHTML =
     '<table class="actions"><thead><tr><th>Id</th><th>Nom</th><th>Nature</th><th>Categorie</th><th>Groupe</th>' +
-    noms.map((n) => `<th>${echapper(n)}</th>`).join('') +
+    noms.map((n) => `<th>${notationHtml(n)}</th>`).join('') +
     '<th></th></tr></thead><tbody>' +
     saisie.actions.map((l, i) => ligneEditeur(l, i, noms)).join('') +
     '</tbody></table>';

@@ -3,15 +3,20 @@
  * telechargement vit dans `main.ts`.
  */
 
-import { JETONS, csv, echapper, nombreFr } from 'aedificium-ui';
+import { JETONS, csv, notationHtml, notationTexte, nombreFr } from 'aedificium-ui';
 import { LIBELLES_FAMILLES, type Options, type ProfilCombinaisons } from '../../src/index';
 import { classeurXlsx, type Cellule, type Feuille } from './xlsx';
 import { famillesPresentes, lignesDuTableau, rendreResultats, tableauActions, tableauEnveloppes, tableauGamma, type Resultat } from './vue';
 
-/** Cellule en texte de tableur francais : virgule decimale. */
+/** Cellule en texte de tableur francais : virgule decimale, notation brute. */
 function texte(c: Cellule): string {
   if (c === null) return '';
-  return typeof c === 'number' ? nombreFr(c, 4) : c;
+  return typeof c === 'number' ? nombreFr(c, 4) : notationTexte(c);
+}
+
+/** Texte d'une cellule pour le classeur : la notation source y devient du texte brut. */
+function enTexte(c: Cellule): Cellule {
+  return typeof c === 'string' ? notationTexte(c) : c;
 }
 
 /** CSV de toutes les combinaisons, une ligne par combinaison. */
@@ -23,13 +28,13 @@ export function combinaisonsEnCsv(r: Resultat): string {
 export function combinaisonsEnXlsx(r: Resultat, profil: ProfilCombinaisons): Uint8Array {
   const feuilles: Feuille[] = famillesPresentes(r.valeurs).map((f) => ({
     nom: LIBELLES_FAMILLES[f].split(' (')[0],
-    lignes: lignesDuTableau(r, [f]),
+    lignes: lignesDuTableau(r, [f]).map((l) => l.map(enTexte)),
   }));
 
   feuilles.push({
     nom: 'Actions',
     lignes: [
-      ['Id', 'Action', 'Nature', 'Categorie', 'Groupe', 'psi_0', 'psi_1', 'psi_2'],
+      ['Id', 'Action', 'Nature', 'Categorie', 'Groupe', 'psi_0', 'psi_1', 'psi_2'].map(enTexte) as Cellule[],
       ...r.actions.map((a): Cellule[] => {
         const psi = a.nature === 'variable' ? profil.psi[a.categorie] : null;
         return [
@@ -41,7 +46,7 @@ export function combinaisonsEnXlsx(r: Resultat, profil: ProfilCombinaisons): Uin
           psi?.psi0.valeur ?? null,
           psi?.psi1.valeur ?? null,
           psi?.psi2.valeur ?? null,
-        ];
+        ].map(enTexte);
       }),
     ],
   });
@@ -50,10 +55,10 @@ export function combinaisonsEnXlsx(r: Resultat, profil: ProfilCombinaisons): Uin
     feuilles.push({
       nom: 'Enveloppes',
       lignes: [
-        ['Famille', 'Extremum', ...r.nomsEffets.flatMap((n) => [n, `${n} : n°`])],
+        ['Famille', 'Extremum', ...r.nomsEffets.flatMap((n) => [n, `${n} : n°`])].map(enTexte) as Cellule[],
         ...r.enveloppes.flatMap((env): Cellule[][] => [
-          [LIBELLES_FAMILLES[env.famille], 'max', ...env.max.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))],
-          [LIBELLES_FAMILLES[env.famille], 'min', ...env.min.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))],
+          [LIBELLES_FAMILLES[env.famille], 'max', ...env.max.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))].map(enTexte),
+          [LIBELLES_FAMILLES[env.famille], 'min', ...env.min.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))].map(enTexte),
         ]),
       ],
     });
@@ -113,17 +118,17 @@ export function noteDeCalculHtml(r: Resultat, profil: ProfilCombinaisons, option
   const enveloppe = tableauEnveloppes(r);
   return `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8" />
-<title>Note de calcul — ${echapper(titre)}</title>
+<title>Note de calcul — ${notationHtml(titre)}</title>
 <style>${STYLE_NOTE}</style></head>
 <body>
 <h1>Note de calcul — combinaisons d actions (EN 1990)</h1>
-<p class="date">${echapper(titre)} · ${echapper(date)} · profil : ${echapper(profil.nom)} (${echapper(profil.date)})</p>
+<p class="date">${notationHtml(titre)} · ${notationHtml(date)} · profil : ${notationHtml(profil.nom)} (${notationHtml(profil.date)})</p>
 <h2>Actions</h2>${tableauActions(r.actions, profil)}
 <h2>Coefficients partiels</h2>${tableauGamma(profil)}
-<h2>Options</h2><ul>${optionsEnTexte(options).map((o) => `<li>${echapper(o)}</li>`).join('')}</ul>
+<h2>Options</h2><ul>${optionsEnTexte(options).map((o) => `<li>${notationHtml(o)}</li>`).join('')}</ul>
 <h2>Combinaisons</h2>${rendreResultats(r)}
 ${enveloppe === '' ? '' : `<h2>Enveloppes des effets</h2>${enveloppe}`}
-<h2>Hypotheses et limites</h2><ul>${HYPOTHESES.map((h) => `<li>${echapper(h)}</li>`).join('')}</ul>
+<h2>Hypotheses et limites</h2><ul>${HYPOTHESES.map((h) => `<li>${notationHtml(h)}</li>`).join('')}</ul>
 <p class="pied">${AIDE_AU_CALCUL}</p>
 </body></html>`;
 }

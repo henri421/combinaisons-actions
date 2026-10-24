@@ -6,7 +6,7 @@
  * Excel lisent `lignesDuTableau`, la meme matiere en cellules.
  */
 
-import { echapper, nombreFr } from 'aedificium-ui';
+import { notationHtml, nombreFr } from 'aedificium-ui';
 import {
   FAMILLES,
   LIBELLES_CATEGORIES,
@@ -54,7 +54,7 @@ export function tableauActions(actions: readonly Action[], profil: ProfilCombina
             : LIBELLES_CATEGORIES[a.categorie];
       const groupe = a.nature === 'variable' && a.groupe !== undefined ? a.groupe : '';
       return (
-        `<tr><td>${echapper(a.id)}</td><td>${echapper(a.nom)}</td><td>${echapper(nature)}</td><td>${echapper(groupe)}</td>` +
+        `<tr><td>${notationHtml(a.id)}</td><td>${notationHtml(a.nom)}</td><td>${notationHtml(nature)}</td><td>${notationHtml(groupe)}</td>` +
         `<td class="valeur">${psi === null ? '' : nombreFr(psi.psi0.valeur, 2)}</td>` +
         `<td class="valeur">${psi === null ? '' : nombreFr(psi.psi1.valeur, 2)}</td>` +
         `<td class="valeur">${psi === null ? '' : nombreFr(psi.psi2.valeur, 2)}</td></tr>`
@@ -63,21 +63,22 @@ export function tableauActions(actions: readonly Action[], profil: ProfilCombina
     .join('');
   return (
     '<div class="defilement"><table class="zones"><thead><tr><th>Id</th><th>Action</th><th>Nature, categorie</th>' +
-    `<th>Groupe</th><th>psi_0</th><th>psi_1</th><th>psi_2</th></tr></thead><tbody>${lignes}</tbody></table></div>`
+    `<th>Groupe</th><th>${notationHtml('psi_0')}</th><th>${notationHtml('psi_1')}</th><th>${notationHtml('psi_2')}</th></tr></thead><tbody>${lignes}</tbody></table></div>`
   );
 }
 
 /** Coefficients partiels du profil. */
 export function tableauGamma(profil: ProfilCombinaisons): string {
   const ligne = (nom: string, j: ProfilCombinaisons['jeuA']) =>
-    `<tr><td>${nom}</td><td class="valeur">${nombreFr(j.gammaGSup.valeur, 2)}</td><td class="valeur">${nombreFr(j.gammaGInf.valeur, 2)}</td>` +
-    `<td class="valeur">${nombreFr(j.gammaQ.valeur, 2)}</td><td class="clause">${echapper(j.gammaQ.source)}</td></tr>`;
+    `<tr><td>${notationHtml(nom)}</td><td class="valeur">${nombreFr(j.gammaGSup.valeur, 2)}</td><td class="valeur">${nombreFr(j.gammaGInf.valeur, 2)}</td>` +
+    `<td class="valeur">${nombreFr(j.gammaQ.valeur, 2)}</td><td class="clause">${notationHtml(j.gammaQ.source)}</td></tr>`;
   return (
-    '<div class="defilement"><table class="zones"><thead><tr><th>Jeu</th><th>gamma_G,sup</th><th>gamma_G,inf</th><th>gamma_Q</th><th>Source</th></tr></thead><tbody>' +
+    '<div class="defilement"><table class="zones"><thead><tr><th>Jeu</th>' +
+    `<th>${notationHtml('gamma_G,sup')}</th><th>${notationHtml('gamma_G,inf')}</th><th>${notationHtml('gamma_Q')}</th><th>Source</th></tr></thead><tbody>` +
     ligne('A, EQU', profil.jeuA) +
     ligne('B, STR/GEO', profil.jeuB) +
     ligne('C, GEO', profil.jeuC) +
-    `<tr><td>xi (6.10b)</td><td class="valeur">${nombreFr(profil.xi.valeur, 2)}</td><td></td><td></td><td class="clause">${echapper(profil.xi.source)}</td></tr>` +
+    `<tr><td>${notationHtml('xi (6.10b)')}</td><td class="valeur">${nombreFr(profil.xi.valeur, 2)}</td><td></td><td></td><td class="clause">${notationHtml(profil.xi.source)}</td></tr>` +
     '</tbody></table></div>'
   );
 }
@@ -90,18 +91,18 @@ export function famillesPresentes(valeurs: readonly ValeurCombinee[]): Famille[]
 /** Tableau HTML d'une famille de combinaisons. */
 export function tableauFamille(f: Famille, r: Resultat): string {
   const liste = r.valeurs.filter((v) => v.combinaison.famille === f);
-  const entetesEffets = r.nomsEffets.map((n) => `<th>${echapper(n)}</th>`).join('');
+  const entetesEffets = r.nomsEffets.map((n) => `<th>${notationHtml(n)}</th>`).join('');
   const lignes = liste
     .map(
       (v) =>
-        `<tr><td class="valeur">${v.combinaison.numero}</td><td>${v.combinaison.expression}</td>` +
-        `<td>${echapper(v.combinaison.dominante ?? '—')}</td><td>${echapper(formuleLisible(v.combinaison, noms))}</td>` +
+        `<tr><td class="valeur">${v.combinaison.numero}</td><td>${notationHtml(v.combinaison.expression)}</td>` +
+        `<td>${notationHtml(v.combinaison.dominante ?? '—')}</td><td>${notationHtml(formuleLisible(v.combinaison, noms))}</td>` +
         v.valeurs.map((x) => `<td class="valeur">${nombre(x)}</td>`).join('') +
         '</tr>'
     )
     .join('');
   return (
-    `<div class="famille"><h3>${echapper(LIBELLES_FAMILLES[f])} <span class="compte">— ${liste.length} combinaison${liste.length > 1 ? 's' : ''}</span></h3>` +
+    `<div class="famille"><h3>${notationHtml(LIBELLES_FAMILLES[f])} <span class="compte">— ${liste.length} combinaison${liste.length > 1 ? 's' : ''}</span></h3>` +
     '<div class="defilement"><table class="zones"><thead><tr><th>N°</th><th>Expr.</th><th>Dominante</th><th>Combinaison</th>' +
     `${entetesEffets}</tr></thead><tbody>${lignes}</tbody></table></div></div>`
   );
@@ -114,13 +115,13 @@ export function tableauEnveloppes(r: Resultat): string {
     e === null ? '<td class="valeur">—</td>' : `<td class="valeur">${nombre(e.valeur)} <span class="extremum">(n° ${e.numero})</span></td>`;
   const lignes = r.enveloppes
     .flatMap((env) => [
-      `<tr><td>${echapper(LIBELLES_FAMILLES[env.famille])}</td><td>max</td>${env.max.map(cellule).join('')}</tr>`,
+      `<tr><td>${notationHtml(LIBELLES_FAMILLES[env.famille])}</td><td>max</td>${env.max.map(cellule).join('')}</tr>`,
       `<tr><td></td><td>min</td>${env.min.map(cellule).join('')}</tr>`,
     ])
     .join('');
   return (
     '<div class="defilement"><table class="zones"><thead><tr><th>Famille</th><th></th>' +
-    r.nomsEffets.map((n) => `<th>${echapper(n)}</th>`).join('') +
+    r.nomsEffets.map((n) => `<th>${notationHtml(n)}</th>`).join('') +
     `</tr></thead><tbody>${lignes}</tbody></table></div>`
   );
 }
