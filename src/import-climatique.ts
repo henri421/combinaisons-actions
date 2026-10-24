@@ -51,7 +51,7 @@ export function actionsClimatiques(texte: string, categorieNeige: 'neige' | 'nei
 
   const neige = objet(doc.neige, 'neige');
   if (typeof neige.nonCalcule === 'string') {
-    ignores.push(`Neige non calculee : ${neige.nonCalcule}`);
+    ignores.push(`Neige non calculée : ${neige.nonCalcule}`);
   } else {
     cas(neige, 'neige').forEach((c, i) => {
       const nom = typeof c.nom === 'string' ? c.nom : `cas ${i + 1}`;
@@ -61,7 +61,7 @@ export function actionsClimatiques(texte: string, categorieNeige: 'neige' | 'nei
 
   const vent = objet(doc.vent, 'vent');
   if (typeof vent.nonCalcule === 'string') {
-    ignores.push(`Vent non calcule : ${vent.nonCalcule}`);
+    ignores.push(`Vent non calculé : ${vent.nonCalcule}`);
   } else {
     cas(vent, 'vent').forEach((c, i) => {
       const nom = typeof c.libelle === 'string' ? c.libelle : `cas ${i + 1}`;

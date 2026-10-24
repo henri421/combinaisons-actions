@@ -22,7 +22,7 @@ describe('import du document de charges-climatiques', () => {
 
   it('un calcul absent est signale, pas tu', () => {
     const r = actionsClimatiques(document({ nonCalcule: 's_k absente' }, { cas: [] }), 'neige-haute');
-    expect(r.ignores).toEqual(['Neige non calculee : s_k absente']);
+    expect(r.ignores).toEqual(['Neige non calculée : s_k absente']);
   });
 
   it('refuse un autre format', () => {
