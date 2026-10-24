@@ -50,12 +50,12 @@ export type Famille = 'ELU-EQU' | 'ELU-STR' | 'ELU-GEO' | 'ELU-ACC' | 'ELS-CAR' 
 export const FAMILLES: readonly Famille[] = ['ELU-EQU', 'ELU-STR', 'ELU-GEO', 'ELU-ACC', 'ELS-CAR', 'ELS-FREQ', 'ELS-QP'];
 
 export const LIBELLES_FAMILLES: Record<Famille, string> = {
-  'ELU-EQU': 'ELU EQU, equilibre statique (tableau A1.2(A))',
+  'ELU-EQU': 'ELU EQU, équilibre statique (tableau A1.2(A))',
   'ELU-STR': 'ELU STR/GEO (tableau A1.2(B))',
   'ELU-GEO': 'ELU GEO (tableau A1.2(C))',
   'ELU-ACC': 'ELU accidentelle (6.11b)',
-  'ELS-CAR': 'ELS caracteristique (6.14b)',
-  'ELS-FREQ': 'ELS frequente (6.15b)',
+  'ELS-CAR': 'ELS caractéristique (6.14b)',
+  'ELS-FREQ': 'ELS fréquente (6.15b)',
   'ELS-QP': 'ELS quasi permanente (6.16b)',
 };
 
@@ -147,7 +147,7 @@ function assignationsVariables(variables: ActionVariable[], avecAbsence: boolean
 function etatsPermanentes(permanentes: ActionPermanente[]): Array<Set<string>> {
   const variables = permanentes.filter((p) => p.peutEtreFavorable);
   if (variables.length > 10) {
-    throw new Error('Plus de 10 actions permanentes pouvant etre favorables : regrouper les actions permanentes.');
+    throw new Error('Plus de 10 actions permanentes pouvant être favorables : regrouper les actions permanentes.');
   }
   const etats: Array<Set<string>> = [];
   for (let masque = 0; masque < 1 << variables.length; masque++) {
@@ -158,8 +158,8 @@ function etatsPermanentes(permanentes: ActionPermanente[]): Array<Set<string>> {
 
 function trop(): string {
   return (
-    `Plus de ${NOMBRE_MAXIMAL} combinaisons : reduire le nombre d actions variables, ` +
-    'les rassembler en groupes d exclusion, ou decocher « actions variables favorables ».'
+    `Plus de ${NOMBRE_MAXIMAL} combinaisons : réduire le nombre d'actions variables, ` +
+    "les rassembler en groupes d'exclusion, ou décocher « actions variables favorables »."
   );
 }
 
@@ -348,8 +348,8 @@ function verifierActions(actions: readonly Action[]): void {
   if (actions.length === 0) throw new Error('Aucune action saisie.');
   const ids = new Set<string>();
   for (const a of actions) {
-    if (a.id.trim() === '') throw new Error('Une action n a pas d identifiant.');
-    if (ids.has(a.id)) throw new Error(`Identifiant d action en double : ${a.id}.`);
+    if (a.id.trim() === '') throw new Error("Une action n'a pas d'identifiant.");
+    if (ids.has(a.id)) throw new Error(`Identifiant d'action en double : ${a.id}.`);
     ids.add(a.id);
   }
 }
@@ -383,7 +383,7 @@ export function genererCombinaisons(actions: readonly Action[], options: Options
   }
   if (options.geoC) brutes.push(...fondamentales(ctx, 'ELU-GEO', profil.jeuC, '6.10'));
   if (options.accidentelle) {
-    if (accidents.length === 0) throw new Error('Combinaisons accidentelles demandees, mais aucune action accidentelle saisie.');
+    if (accidents.length === 0) throw new Error('Combinaisons accidentelles demandées, mais aucune action accidentelle saisie.');
     brutes.push(...accidentelles(ctx, accidents, options.psiAccidentelle));
   }
   if (options.els) brutes.push(...service(ctx, 'ELS-CAR'), ...service(ctx, 'ELS-FREQ'), ...service(ctx, 'ELS-QP'));

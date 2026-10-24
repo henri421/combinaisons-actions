@@ -28,7 +28,7 @@ const CLE_STOCKAGE = 'combinaisons-actions/saisie';
 
 function exige<T extends Element>(selecteur: string): T {
   const e = document.querySelector<T>(selecteur);
-  if (e === null) throw new Error(`Element absent de la page : ${selecteur}`);
+  if (e === null) throw new Error(`Élément absent de la page : ${selecteur}`);
   return e;
 }
 
@@ -81,9 +81,9 @@ function ligneEditeur(l: LigneAction, i: number, noms: string[]): string {
     .join('');
   const detail =
     l.nature === 'variable'
-      ? `<select data-ligne="${i}" data-champ="categorie" aria-label="categorie, action ${i + 1}">${optionsCategorie(l.categorie)}</select>`
+      ? `<select data-ligne="${i}" data-champ="categorie" aria-label="catégorie, action ${i + 1}">${optionsCategorie(l.categorie)}</select>`
       : l.nature === 'permanente'
-        ? `<label class="case"><input type="checkbox" data-ligne="${i}" data-champ="peutEtreFavorable"${l.peutEtreFavorable ? ' checked' : ''} /><span>peut etre favorable</span></label>`
+        ? `<label class="case"><input type="checkbox" data-ligne="${i}" data-champ="peutEtreFavorable"${l.peutEtreFavorable ? ' checked' : ''} /><span>peut être favorable</span></label>`
         : '';
   const groupe = l.nature === 'variable' ? champ('groupe', l.groupe) : '';
   const effets = noms.map((_, k) => `<td>${champ(`effet-${k}`, l.effets[k] ?? '', 'effet')}</td>`).join('');
@@ -91,14 +91,14 @@ function ligneEditeur(l: LigneAction, i: number, noms: string[]): string {
     `<tr><td>${champ('id', l.id, 'id')}</td><td>${champ('nom', l.nom)}</td>` +
     `<td><select data-ligne="${i}" data-champ="nature" data-structure="1" aria-label="nature, action ${i + 1}">${nature}</select></td>` +
     `<td>${detail}</td><td>${groupe}</td>${effets}` +
-    `<td><button type="button" class="retirer" data-action="retirer" data-ligne="${i}" aria-label="retirer l action ${i + 1}">×</button></td></tr>`
+    `<td><button type="button" class="retirer" data-action="retirer" data-ligne="${i}" aria-label="retirer l'action ${i + 1}">×</button></td></tr>`
   );
 }
 
 function rendreEditeur(): void {
   const noms = nomsDesEffets(saisie);
   zones.editeur.innerHTML =
-    '<table class="actions"><thead><tr><th>Id</th><th>Nom</th><th>Nature</th><th>Categorie</th><th>Groupe</th>' +
+    '<table class="actions"><thead><tr><th>Id</th><th>Nom</th><th>Nature</th><th>Catégorie</th><th>Groupe</th>' +
     noms.map((n) => `<th>${notationHtml(n)}</th>`).join('') +
     '<th></th></tr></thead><tbody>' +
     saisie.actions.map((l, i) => ligneEditeur(l, i, noms)).join('') +
@@ -246,14 +246,14 @@ document.addEventListener('click', (evenement) => {
   }
 
   if (!action.startsWith('exporter-')) return;
-  if (dernier === null) return montrerErreur('Aucune combinaison valide a exporter : corriger la saisie.');
+  if (dernier === null) return montrerErreur('Aucune combinaison valide à exporter : corriger la saisie.');
   const date = new Date().toISOString().slice(0, 10);
   if (action === 'exporter-csv') {
     telecharger('combinaisons.csv', combinaisonsEnCsv(dernier), 'text/csv;charset=utf-8');
   } else if (action === 'exporter-xlsx') {
     telechargerOctets('combinaisons.xlsx', combinaisonsEnXlsx(dernier, PROFIL), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   } else if (action === 'exporter-note') {
-    ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(dernier, PROFIL, saisie.options, 'Combinaisons d actions', date));
+    ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(dernier, PROFIL, saisie.options, "Combinaisons d'actions", date));
   }
 });
 

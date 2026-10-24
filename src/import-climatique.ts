@@ -39,7 +39,7 @@ export function actionsClimatiques(texte: string, categorieNeige: 'neige' | 'nei
   try {
     brut = JSON.parse(texte);
   } catch {
-    throw new Error('Import : le fichier n est pas un JSON lisible.');
+    throw new Error("Import : le fichier n'est pas un JSON lisible.");
   }
   const doc = objet(brut, 'document');
   if (doc.format !== FORMAT) {

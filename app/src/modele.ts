@@ -75,14 +75,14 @@ export function lireModele(saisie: Saisie): Lecture {
       if (l.nature === 'permanente') actions.push({ id, nom, nature: 'permanente', peutEtreFavorable: l.peutEtreFavorable });
       else if (l.nature === 'accidentelle') actions.push({ id, nom, nature: 'accidentelle' });
       else {
-        if (!CATEGORIES.includes(l.categorie)) throw new Error(`Action ${id} : categorie inconnue.`);
+        if (!CATEGORIES.includes(l.categorie)) throw new Error(`Action ${id} : catégorie inconnue.`);
         actions.push({ id, nom, nature: 'variable', categorie: l.categorie, ...(l.groupe.trim() !== '' ? { groupe: l.groupe.trim() } : {}) });
       }
       effets[id] = noms.map((n, k) => {
         const brut = (l.effets[k] ?? '').trim();
         if (brut === '') return null;
         const v = lireNombre(brut);
-        if (v === null || !Number.isFinite(v)) throw new Error(`Action ${id}, effet ${n} : nombre attendu, recu « ${brut} ».`);
+        if (v === null || !Number.isFinite(v)) throw new Error(`Action ${id}, effet ${n} : nombre attendu, reçu « ${brut} ».`);
         return v;
       });
     });

@@ -71,8 +71,8 @@ export interface ProfilCombinaisons {
  */
 export function verifierProfil(p: ProfilCombinaisons): void {
   const controler = (chemin: string, v: ValeurSourcee): void => {
-    if (!Number.isFinite(v.valeur)) throw new Error(`Profil : ${chemin} n est pas un nombre.`);
-    if (v.source.trim() === '') throw new Error(`Profil : ${chemin} n a pas de source ; une valeur sans provenance bloque le calcul.`);
+    if (!Number.isFinite(v.valeur)) throw new Error(`Profil : ${chemin} n'est pas un nombre.`);
+    if (v.source.trim() === '') throw new Error(`Profil : ${chemin} n'a pas de source ; une valeur sans provenance bloque le calcul.`);
   };
   for (const c of CATEGORIES) {
     const psi = p.psi[c];
@@ -88,7 +88,7 @@ export function verifierProfil(p: ProfilCombinaisons): void {
   controler('xi', p.xi);
 }
 
-const SOURCE = 'EN 1990:2002, valeur recommandee';
+const SOURCE = 'EN 1990:2002, valeur recommandée';
 
 function psi(psi0: number, psi1: number, psi2: number): Psi {
   const source = `${SOURCE}, tableau A1.1`;
@@ -107,7 +107,7 @@ function jeu(tableau: string, gammaGSup: number, gammaGInf: number, gammaQ: numb
 /** Valeurs recommandees de l'EN 1990:2002, annexe A1 (batiments). */
 export function en1990Recommande(): ProfilCombinaisons {
   return {
-    nom: 'EN 1990:2002, valeurs recommandees (batiments)',
+    nom: 'EN 1990:2002, valeurs recommandées (bâtiments)',
     date: '2026-10-23',
     psi: {
       A: psi(0.7, 0.5, 0.3),
@@ -132,16 +132,16 @@ export function en1990Recommande(): ProfilCombinaisons {
 
 /** Libelles des categories, tels qu'ils s'affichent. */
 export const LIBELLES_CATEGORIES: Record<Categorie, string> = {
-  A: 'Categorie A : habitation, residentiel',
-  B: 'Categorie B : bureaux',
-  C: 'Categorie C : lieux de reunion',
-  D: 'Categorie D : commerces',
-  E: 'Categorie E : stockage',
-  F: 'Categorie F : vehicules ≤ 30 kN',
-  G: 'Categorie G : vehicules de 30 a 160 kN',
-  H: 'Categorie H : toits',
+  A: 'Catégorie A : habitation, résidentiel',
+  B: 'Catégorie B : bureaux',
+  C: 'Catégorie C : lieux de réunion',
+  D: 'Catégorie D : commerces',
+  E: 'Catégorie E : stockage',
+  F: 'Catégorie F : véhicules ≤ 30 kN',
+  G: 'Catégorie G : véhicules de 30 à 160 kN',
+  H: 'Catégorie H : toits',
   'neige-haute': 'Neige, altitude > 1000 m',
   neige: 'Neige, altitude ≤ 1000 m',
   vent: 'Vent',
-  temperature: 'Temperature (hors incendie)',
+  temperature: 'Température (hors incendie)',
 };

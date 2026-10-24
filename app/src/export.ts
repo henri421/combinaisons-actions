@@ -34,7 +34,7 @@ export function combinaisonsEnXlsx(r: Resultat, profil: ProfilCombinaisons): Uin
   feuilles.push({
     nom: 'Actions',
     lignes: [
-      ['Id', 'Action', 'Nature', 'Categorie', 'Groupe', 'psi_0', 'psi_1', 'psi_2'].map(enTexte) as Cellule[],
+      ['Id', 'Action', 'Nature', 'Catégorie', 'Groupe', 'psi_0', 'psi_1', 'psi_2'].map(enTexte) as Cellule[],
       ...r.actions.map((a): Cellule[] => {
         const psi = a.nature === 'variable' ? profil.psi[a.categorie] : null;
         return [
@@ -92,25 +92,25 @@ const STYLE_NOTE = `${JETONS}
 /** Les options, en phrases. */
 export function optionsEnTexte(o: Options): string[] {
   return [
-    o.formule === '6.10' ? 'ELU STR/GEO par l expression (6.10).' : 'ELU STR/GEO par la plus defavorable de (6.10a) et (6.10b).',
-    o.equ ? 'ELU EQU (jeu A) formees.' : 'ELU EQU non formees.',
-    o.geoC ? 'ELU GEO avec le jeu C formees (approches 1 et 3).' : 'ELU GEO avec le jeu C non formees.',
+    o.formule === '6.10' ? "ELU STR/GEO par l'expression (6.10)." : 'ELU STR/GEO par la plus défavorable de (6.10a) et (6.10b).',
+    o.equ ? 'ELU EQU (jeu A) formées.' : 'ELU EQU non formées.',
+    o.geoC ? 'ELU GEO avec le jeu C formées (approches 1 et 3).' : 'ELU GEO avec le jeu C non formées.',
     o.accidentelle
-      ? `Combinaisons accidentelles (6.11b), dominante a ${o.psiAccidentelle === 'psi1' ? 'psi_1' : 'psi_2'}.`
-      : 'Combinaisons accidentelles non formees.',
-    o.els ? 'Combinaisons de service formees.' : 'Combinaisons de service non formees.',
+      ? `Combinaisons accidentelles (6.11b), dominante à ${o.psiAccidentelle === 'psi1' ? 'psi_1' : 'psi_2'}.`
+      : 'Combinaisons accidentelles non formées.',
+    o.els ? 'Combinaisons de service formées.' : 'Combinaisons de service non formées.',
     o.variablesFavorables
-      ? 'Chaque groupe d actions variables est aussi envisage absent (action favorable).'
-      : 'Toutes les actions variables sont supposees defavorables (presentes).',
+      ? "Chaque groupe d'actions variables est aussi envisagé absent (action favorable)."
+      : 'Toutes les actions variables sont supposées défavorables (présentes).',
   ];
 }
 
 export const HYPOTHESES = [
-  'EN 1990:2002, annexe A1 (batiments) : expressions (6.10), (6.10a), (6.10b), (6.11b), (6.14b), (6.15b), (6.16b).',
-  'Les charges d exploitation des toits (categorie H) ne sont combinees ni avec la neige ni avec le vent (A1.2.1(3)).',
-  'Deux actions d un meme groupe d exclusion ne sont jamais simultanees.',
-  'Valeurs combinees par superposition lineaire des effets saisis : valable pour une analyse lineaire seulement.',
-  'Ni combinaisons sismiques (6.12b), ni actions de precontrainte, ni ponts (annexe A2).',
+  'EN 1990:2002, annexe A1 (bâtiments) : expressions (6.10), (6.10a), (6.10b), (6.11b), (6.14b), (6.15b), (6.16b).',
+  "Les charges d'exploitation des toits (catégorie H) ne sont combinées ni avec la neige ni avec le vent (A1.2.1(3)).",
+  "Deux actions d'un même groupe d'exclusion ne sont jamais simultanées.",
+  'Valeurs combinées par superposition linéaire des effets saisis : valable pour une analyse linéaire seulement.',
+  'Ni combinaisons sismiques (6.12b), ni actions de précontrainte, ni ponts (annexe A2).',
 ];
 
 /** La note de calcul : les memes tableaux que l'ecran, dans le meme ordre. */
@@ -121,14 +121,14 @@ export function noteDeCalculHtml(r: Resultat, profil: ProfilCombinaisons, option
 <title>Note de calcul — ${notationHtml(titre)}</title>
 <style>${STYLE_NOTE}</style></head>
 <body>
-<h1>Note de calcul — combinaisons d actions (EN 1990)</h1>
+<h1>Note de calcul — combinaisons d'actions (EN 1990)</h1>
 <p class="date">${notationHtml(titre)} · ${notationHtml(date)} · profil : ${notationHtml(profil.nom)} (${notationHtml(profil.date)})</p>
 <h2>Actions</h2>${tableauActions(r.actions, profil)}
 <h2>Coefficients partiels</h2>${tableauGamma(profil)}
 <h2>Options</h2><ul>${optionsEnTexte(options).map((o) => `<li>${notationHtml(o)}</li>`).join('')}</ul>
 <h2>Combinaisons</h2>${rendreResultats(r)}
 ${enveloppe === '' ? '' : `<h2>Enveloppes des effets</h2>${enveloppe}`}
-<h2>Hypotheses et limites</h2><ul>${HYPOTHESES.map((h) => `<li>${notationHtml(h)}</li>`).join('')}</ul>
+<h2>Hypothèses et limites</h2><ul>${HYPOTHESES.map((h) => `<li>${notationHtml(h)}</li>`).join('')}</ul>
 <p class="pied">${AIDE_AU_CALCUL}</p>
 </body></html>`;
 }

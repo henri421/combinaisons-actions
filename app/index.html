@@ -21,13 +21,13 @@
     <header>
       <h1>combinaisons-actions</h1>
       <p class="sous-titre">
-        Combinaisons d'actions de l'EN 1990 pour les batiments : ELU EQU, STR/GEO, GEO et accidentelles, ELS
-        caracteristiques, frequentes et quasi permanentes. Export CSV et Excel.
+        Combinaisons d'actions de l'EN 1990 pour les bâtiments : ELU EQU, STR/GEO, GEO et accidentelles, ELS
+        caractéristiques, fréquentes et quasi permanentes. Export CSV et Excel.
       </p>
       <p class="avertissement">
-        Aide au calcul : l'outil forme les combinaisons, il ne choisit pas celle qui gouverne. Les coefficients
-        &gamma; et &psi; sont les valeurs recommandees de l'EN 1990:2002 ; l'annexe nationale peut les modifier, et il
-        appartient a l'utilisateur de verifier qu'ils correspondent au texte applicable a son projet.
+        L'outil forme les combinaisons, il ne choisit pas celle qui gouverne. Les coefficients &gamma; et &psi; sont
+        les valeurs recommandées de l'EN 1990:2002 ; l'annexe nationale peut les modifier, et il appartient à
+        l'utilisateur de vérifier qu'ils correspondent au texte applicable à son projet.
       </p>
     </header>
 
@@ -37,8 +37,8 @@
           <fieldset>
             <legend>Actions</legend>
             <p class="note">
-              Une ligne par action caracteristique. Le <strong>groupe</strong> rend des actions exclusives : deux
-              actions du meme groupe ne sont jamais combinees ensemble (les cas de vent entre eux, par exemple).
+              Une ligne par action caractéristique. Le <strong>groupe</strong> rend des actions exclusives : deux
+              actions du même groupe ne sont jamais combinées ensemble (les cas de vent entre eux, par exemple).
             </p>
             <div class="defilement" data-role="editeur"></div>
             <div class="boutons">
@@ -51,12 +51,12 @@
           <fieldset>
             <legend>Effets (facultatif)</legend>
             <label class="large"
-              ><span>Noms des effets, separes par « ; » (ex. N ; M ; V)</span
+              ><span>Noms des effets, séparés par « ; » (ex. N ; M ; V)</span
               ><input type="text" data-champ="nomsEffets"
             /></label>
             <p class="note">
-              Avec des effets, chaque action recoit une valeur par effet ; l'outil rend les valeurs combinees et leur
-              enveloppe. Superposition lineaire : analyse lineaire seulement.
+              Avec des effets, chaque action reçoit une valeur par effet ; l'outil rend les valeurs combinées et leur
+              enveloppe. Superposition linéaire : analyse linéaire seulement.
             </p>
           </fieldset>
 
@@ -79,7 +79,7 @@
                 <option value="psi2">&psi;<sub>2</sub> Q<sub>k,1</sub></option>
               </select>
             </label>
-            <label class="case"><input type="checkbox" data-option="els" /><span>ELS caracteristiques, frequentes, quasi permanentes</span></label>
+            <label class="case"><input type="checkbox" data-option="els" /><span>ELS caractéristiques, fréquentes, quasi permanentes</span></label>
             <label class="case"
               ><input type="checkbox" data-option="variablesFavorables" /><span
                 >Envisager aussi chaque action variable absente (favorable)</span
@@ -106,13 +106,13 @@
           </fieldset>
 
           <fieldset>
-            <legend>Modele</legend>
+            <legend>Modèle</legend>
             <div class="boutons">
               <button type="button" data-action="enregistrer">Enregistrer (JSON)</button>
-              <button type="button" data-action="reinitialiser">Exemple de depart</button>
+              <button type="button" data-action="reinitialiser">Exemple de départ</button>
             </div>
             <label class="large fichier"
-              ><span>Ouvrir un modele</span><input type="file" accept="application/json,.json" data-role="ouvrir"
+              ><span>Ouvrir un modèle</span><input type="file" accept="application/json,.json" data-role="ouvrir"
             /></label>
           </fieldset>
         </form>
@@ -145,7 +145,7 @@
           </div>
           <p class="note">
             Le CSV et le classeur portent une ligne par combinaison et une colonne par action (son coefficient), puis
-            les effets combines. Le classeur a un onglet par famille, un onglet des actions et un des enveloppes.
+            les effets combinés. Le classeur a un onglet par famille, un onglet des actions et un des enveloppes.
           </p>
         </section>
       </div>
@@ -153,8 +153,8 @@
 
     <footer>
       <p>
-        Partie de la suite <a href="https://henri421.github.io/WebAedificium/">Aedificium</a>. Calcul entierement
-        local : aucune donnee ne quitte le navigateur.
+        Partie de la suite <a href="https://henri421.github.io/WebAedificium/">Aedificium</a>. Calcul entièrement
+        local : aucune donnée ne quitte le navigateur.
       </p>
     </footer>
 

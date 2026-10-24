@@ -48,7 +48,7 @@ export function tableauActions(actions: readonly Action[], profil: ProfilCombina
       const psi = a.nature === 'variable' ? profil.psi[a.categorie] : null;
       const nature =
         a.nature === 'permanente'
-          ? `permanente${a.peutEtreFavorable ? ', peut etre favorable' : ''}`
+          ? `permanente${a.peutEtreFavorable ? ', peut être favorable' : ''}`
           : a.nature === 'accidentelle'
             ? 'accidentelle'
             : LIBELLES_CATEGORIES[a.categorie];
@@ -62,7 +62,7 @@ export function tableauActions(actions: readonly Action[], profil: ProfilCombina
     })
     .join('');
   return (
-    '<div class="defilement"><table class="zones"><thead><tr><th>Id</th><th>Action</th><th>Nature, categorie</th>' +
+    '<div class="defilement"><table class="zones"><thead><tr><th>Id</th><th>Action</th><th>Nature, catégorie</th>' +
     `<th>Groupe</th><th>${notationHtml('psi_0')}</th><th>${notationHtml('psi_1')}</th><th>${notationHtml('psi_2')}</th></tr></thead><tbody>${lignes}</tbody></table></div>`
   );
 }
