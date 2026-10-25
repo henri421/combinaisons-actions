@@ -1,10 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="72" fill="#f7f7f6"/>
-  <path d="M 150 420 L 150 270 L 300 170 L 450 270 L 450 420 Z" fill="#e7eaee" stroke="#1a1a1a" stroke-width="10" stroke-linejoin="round"/>
-  <path d="M 140 262 L 300 155 L 460 262 L 460 238 L 300 128 L 140 238 Z" fill="#2f5d8a"/>
-  <g stroke="#1e5aa8" stroke-width="12" stroke-linecap="round" fill="none">
-    <line x1="52" y1="300" x2="124" y2="300"/>
-    <line x1="52" y1="350" x2="124" y2="350"/>
-    <line x1="52" y1="400" x2="124" y2="400"/>
+  <rect x="72" y="372" width="368" height="36" fill="#e7eaee" stroke="#1a1a1a" stroke-width="8"/>
+  <polygon points="104,412 76,456 132,456" fill="#9a978f"/>
+  <polygon points="408,412 380,456 436,456" fill="#9a978f"/>
+  <rect x="72" y="300" width="368" height="64" fill="#c8c6c0"/>
+  <line x1="88" y1="140" x2="424" y2="140" stroke="#1e5aa8" stroke-width="10" stroke-linecap="round"/>
+  <g stroke="#1e5aa8" stroke-width="12" stroke-linecap="round">
+    <line x1="112" y1="140" x2="112" y2="252"/>
+    <line x1="184" y1="140" x2="184" y2="252"/>
+    <line x1="256" y1="140" x2="256" y2="252"/>
+    <line x1="328" y1="140" x2="328" y2="252"/>
+    <line x1="400" y1="140" x2="400" y2="252"/>
+  </g>
+  <g fill="#1e5aa8">
+    <polygon points="94,246 130,246 112,282"/>
+    <polygon points="166,246 202,246 184,282"/>
+    <polygon points="238,246 274,246 256,282"/>
+    <polygon points="310,246 346,246 328,282"/>
+    <polygon points="382,246 418,246 400,282"/>
   </g>
 </svg>
