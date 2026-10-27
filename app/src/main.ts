@@ -6,7 +6,7 @@
  * mise en forme. L'ecran et la note appellent les memes fonctions de `vue`.
  */
 
-import { echapper, notationHtml, ouvrirOuTelecharger, telecharger } from 'aedificium-ui';
+import { echapper, noteDeCalculHtml, notationHtml, ouvrirOuTelecharger, telecharger } from 'aedificium-ui';
 import {
   CATEGORIES,
   LIBELLES_CATEGORIES,
@@ -20,11 +20,13 @@ import {
 } from '../../src/index';
 import { identifiantLibre, lireModele, nomsDesEffets, relire, saisieParDefaut, serialiser, type LigneAction, type Nature, type Saisie } from './modele';
 import { messageDErreur, rendreResultats, tableauActions, tableauEnveloppes, tableauGamma, type Resultat } from './vue';
-import { combinaisonsEnCsv, combinaisonsEnXlsx, noteDeCalculHtml } from './export';
+import { combinaisonsEnCsv, combinaisonsEnXlsx } from './export';
+import { noteDuCalcul } from './note';
 import './style.css';
 
 const PROFIL = en1990Recommande();
 const CLE_STOCKAGE = 'combinaisons-actions/saisie';
+const CLE_CARTOUCHE = 'combinaisons-actions:cartouche';
 
 function exige<T extends Element>(selecteur: string): T {
   const e = document.querySelector<T>(selecteur);
@@ -44,6 +46,9 @@ const zones = {
 };
 const champEffets = exige<HTMLInputElement>('[data-champ="nomsEffets"]');
 const categorieNeige = exige<HTMLSelectElement>('[data-role="categorie-neige"]');
+const sectionSorties = exige<HTMLElement>('#sorties');
+const champProjet = exige<HTMLInputElement>('[data-role="projet"]');
+const champElement = exige<HTMLInputElement>('[data-role="element"]');
 
 let saisie: Saisie = charger() ?? saisieParDefaut();
 let dernier: Resultat | null = null;
@@ -64,6 +69,20 @@ function memoriser(): void {
     window.localStorage.setItem(CLE_STOCKAGE, serialiser(saisie));
   } catch {
     // Stockage indisponible (navigation privee) : la page fonctionne sans.
+  }
+}
+
+/** Cartouche de la note : champs absents ou illisibles valent chaine vide. */
+function lireCartouche(): { projet: string; element: string } {
+  try {
+    const t = window.localStorage.getItem(CLE_CARTOUCHE);
+    const o = t === null ? null : (JSON.parse(t) as Record<string, unknown> | null);
+    return {
+      projet: typeof o?.projet === 'string' ? o.projet : '',
+      element: typeof o?.element === 'string' ? o.element : '',
+    };
+  } catch {
+    return { projet: '', element: '' };
   }
 }
 
@@ -133,7 +152,7 @@ function recalculer(): void {
   try {
     const combinaisons = genererCombinaisons(lecture.actions, lecture.options, PROFIL);
     const valeurs = combinerEffets(combinaisons, lecture.effets, lecture.nomsEffets.length);
-    dernier = { actions: lecture.actions, nomsEffets: lecture.nomsEffets, valeurs, enveloppes: enveloppes(valeurs, lecture.nomsEffets.length) };
+    dernier = { actions: lecture.actions, nomsEffets: lecture.nomsEffets, effets: lecture.effets, valeurs, enveloppes: enveloppes(valeurs, lecture.nomsEffets.length) };
   } catch (e) {
     return montrerErreur(messageDErreur(e));
   }
@@ -189,6 +208,15 @@ formulaire.addEventListener('change', (evenement) => {
   const cible = evenement.target;
   if (cible instanceof HTMLSelectElement || (cible instanceof HTMLInputElement && cible.type === 'checkbox')) {
     cible.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+});
+
+// Le cartouche vit hors du formulaire de saisie : le modifier ne relance pas le calcul.
+sectionSorties.addEventListener('input', () => {
+  try {
+    window.localStorage.setItem(CLE_CARTOUCHE, JSON.stringify({ projet: champProjet.value, element: champElement.value }));
+  } catch {
+    // Stockage indisponible : la note lit directement les champs.
   }
 });
 
@@ -253,7 +281,8 @@ document.addEventListener('click', (evenement) => {
   } else if (action === 'exporter-xlsx') {
     telechargerOctets('combinaisons.xlsx', combinaisonsEnXlsx(dernier, PROFIL), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   } else if (action === 'exporter-note') {
-    ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(dernier, PROFIL, saisie.options, "Combinaisons d'actions", date));
+    const cartouche = { projet: champProjet.value, element: champElement.value, date };
+    ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(noteDuCalcul(PROFIL, dernier, saisie.options, cartouche)));
   }
 });
 
@@ -293,6 +322,10 @@ exige<HTMLInputElement>('[data-role="importer"]').addEventListener('change', asy
     montrerErreur(messageDErreur(err));
   }
 });
+
+const cartouche = lireCartouche();
+champProjet.value = cartouche.projet;
+champElement.value = cartouche.element;
 
 ecrireOptions();
 rendreEditeur();
