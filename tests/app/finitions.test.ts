@@ -7,11 +7,12 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { NOMS_GRECS, notationHtml, constatsAffichage, contenuBalise, texteVisible } from 'aedificium-ui';
+import { NOMS_GRECS, notationHtml, constatsAffichage, contenuBalise, noteDeCalculHtml, texteVisible } from 'aedificium-ui';
 import { combinerEffets, en1990Recommande, enveloppes, genererCombinaisons, OPTIONS_PAR_DEFAUT, type Options } from '../../src/index';
 import { lireModele, saisieParDefaut } from '../../app/src/modele';
 import { rendreResultats, tableauActions, tableauGamma, type Resultat } from '../../app/src/vue';
-import { combinaisonsEnCsv, noteDeCalculHtml, optionsEnTexte } from '../../app/src/export';
+import { combinaisonsEnCsv } from '../../app/src/export';
+import { noteDuCalcul, optionsEnTexte } from '../../app/src/note';
 
 const P = en1990Recommande();
 const TITRE = "Combinaisons d'actions";
@@ -35,7 +36,7 @@ function resultat(options: Options): Resultat {
   const l = lireModele(s);
   if (!l.ok) throw new Error(l.message);
   const valeurs = combinerEffets(genererCombinaisons(l.actions, l.options, P), l.effets, 2);
-  return { actions: l.actions, nomsEffets: l.nomsEffets, valeurs, enveloppes: enveloppes(valeurs, 2) };
+  return { actions: l.actions, nomsEffets: l.nomsEffets, valeurs, enveloppes: enveloppes(valeurs, 2), effets: l.effets };
 }
 
 function sorties() {
@@ -45,7 +46,7 @@ function sorties() {
   for (const o of OPTIONS) {
     const r = resultat(o);
     ecran.push(tableauActions(r.actions, P), rendreResultats(r), ...optionsEnTexte(o));
-    notes.push(noteDeCalculHtml(r, P, o, 'Essai', '2026-10-24'));
+    notes.push(noteDeCalculHtml(noteDuCalcul(P, r, o, { projet: 'Essai', element: '', date: '2026-10-24' })));
     csv.push(combinaisonsEnCsv(r));
   }
   return { ecran, notes, csv };

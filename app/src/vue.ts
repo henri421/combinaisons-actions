@@ -14,6 +14,7 @@ import {
   formuleLisible,
   type Action,
   type Combinaison,
+  type Effets,
   type Enveloppe,
   type Famille,
   type ProfilCombinaisons,
@@ -26,6 +27,8 @@ export interface Resultat {
   nomsEffets: string[];
   valeurs: ValeurCombinee[];
   enveloppes: Enveloppe[];
+  /** Effets caracteristiques saisis, par action ; absents, la note ne les reprend pas. */
+  effets?: Effets;
 }
 
 export function messageDErreur(e: unknown): string {

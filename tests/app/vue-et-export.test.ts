@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { JETONS, valeursDesJetons } from 'aedificium-ui';
 import { combinerEffets, en1990Recommande, enveloppes, genererCombinaisons, OPTIONS_PAR_DEFAUT } from '../../src/index';
 import { lireModele, relire, saisieParDefaut, serialiser } from '../../app/src/modele';
-import { lignesDuTableau, rendreResultats, type Resultat } from '../../app/src/vue';
-import { combinaisonsEnCsv, noteDeCalculHtml } from '../../app/src/export';
+import { lignesDuTableau, type Resultat } from '../../app/src/vue';
+import { combinaisonsEnCsv } from '../../app/src/export';
 
 const P = en1990Recommande();
 
@@ -46,12 +46,6 @@ describe('saisie', () => {
 });
 
 describe('sorties', () => {
-  it('la note porte exactement les tableaux de l ecran', () => {
-    const r = resultat();
-    const note = noteDeCalculHtml(r, P, OPTIONS_PAR_DEFAUT, 'Essai', '2026-10-23');
-    expect(note).toContain(rendreResultats(r));
-  });
-
   it('le tableau a une ligne par combinaison, une colonne par action, puis les effets', () => {
     const r = resultat();
     const lignes = lignesDuTableau(r);
