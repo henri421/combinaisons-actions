@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="theme-color" content="#f7f7f6" />
+    <link rel="icon" href="../icone.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../icone-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Combinations of actions — EN 1990, ULS and SLS</title>
+  </head>
+  <body>
+    <nav class="barre" aria-label="suite of tools">
+      <div class="barre-corps">
+        <span class="barre-nom">Aedificium &middot; Combinations</span>
+        <div class="barre-actions">
+          <a class="barre-lien" href="https://henri421.github.io/WebAedificium/" target="_blank" rel="noopener"
+            >Aedificium suite &#8599;</a
+          >
+          <a class="barre-langue" href="../" hreflang="fr" lang="fr" aria-label="Version française">FR</a>
+        </div>
+      </div>
+    </nav>
+
+    <header>
+      <h1>Combinations of actions</h1>
+      <p class="sous-titre">
+        Combinations of actions of EN 1990 for buildings: ULS EQU, STR/GEO, GEO and accidental, SLS characteristic,
+        frequent and quasi-permanent. CSV and Excel export.
+      </p>
+      <p class="avertissement">
+        The &gamma; and &psi; factors are the recommended values of EN 1990:2002; the National Annex may modify them.
+        The active profile must match the text that applies to the project.
+      </p>
+    </header>
+
+    <main>
+      <section id="saisie" aria-label="input of the actions">
+        <form id="formulaire" autocomplete="off">
+          <fieldset>
+            <legend>Actions</legend>
+            <p class="note">
+              One row per characteristic action. The <strong>group</strong> makes actions mutually exclusive: two
+              actions of the same group are never combined together (wind cases with each other, for example).
+            </p>
+            <div class="defilement" data-role="editeur"></div>
+            <div class="boutons">
+              <button type="button" data-action="ajouter-permanente">+ permanent</button>
+              <button type="button" data-action="ajouter-variable">+ variable</button>
+              <button type="button" data-action="ajouter-accidentelle">+ accidental</button>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Effects (optional)</legend>
+            <label class="large"
+              ><span>Names of the effects, separated by “;” (e.g. N ; M ; V)</span
+              ><input type="text" data-champ="nomsEffets"
+            /></label>
+            <p class="note">
+              With effects, each action gets one value per effect; the tool returns the combined values and their
+              envelope. Linear superposition: linear analysis only.
+            </p>
+          </fieldset>
+
+          <fieldset>
+            <legend>Options</legend>
+            <label
+              ><span>ULS STR/GEO</span>
+              <select data-option="formule">
+                <option value="6.10">expression (6.10)</option>
+                <option value="6.10ab">(6.10a) and (6.10b)</option>
+              </select>
+            </label>
+            <label class="case"><input type="checkbox" data-option="equ" /><span>ULS EQU (set A)</span></label>
+            <label class="case"><input type="checkbox" data-option="geoC" /><span>ULS GEO, set C (approaches 1 and 3)</span></label>
+            <label class="case"><input type="checkbox" data-option="accidentelle" /><span>ULS accidental (6.11b)</span></label>
+            <label
+              ><span>Leading action in accidental combinations</span>
+              <select data-option="psiAccidentelle">
+                <option value="psi1">&psi;<sub>1</sub> Q<sub>k,1</sub></option>
+                <option value="psi2">&psi;<sub>2</sub> Q<sub>k,1</sub></option>
+              </select>
+            </label>
+            <label class="case"><input type="checkbox" data-option="els" /><span>SLS characteristic, frequent, quasi-permanent</span></label>
+            <label class="case"
+              ><input type="checkbox" data-option="variablesFavorables" /><span
+                >Also consider each variable action absent (favourable)</span
+              ></label
+            >
+          </fieldset>
+
+          <fieldset>
+            <legend>Import from charges-climatiques</legend>
+            <p class="note">
+              The “Actions (JSON)” file of the charges-climatiques tool: each snow and wind case becomes a variable
+              action, in a snow group and a wind group.
+            </p>
+            <label
+              ><span>Site altitude</span>
+              <select data-role="categorie-neige">
+                <option value="neige">≤ 1000 m</option>
+                <option value="neige-haute">&gt; 1000 m</option>
+              </select>
+            </label>
+            <label class="large fichier"
+              ><span>JSON file</span><input type="file" accept="application/json,.json" data-role="importer"
+            /></label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Model</legend>
+            <div class="boutons">
+              <button type="button" data-action="enregistrer">Save (JSON)</button>
+              <button type="button" data-action="reinitialiser">Starting example</button>
+            </div>
+            <label class="large fichier"
+              ><span>Open a model</span><input type="file" accept="application/json,.json" data-role="ouvrir"
+            /></label>
+          </fieldset>
+        </form>
+        <p data-role="erreur" class="erreur" role="alert" hidden></p>
+      </section>
+
+      <div class="colonne">
+        <section aria-label="actions and factors">
+          <h2>Actions and factors</h2>
+          <div data-role="actions"></div>
+          <div data-role="gamma"></div>
+        </section>
+
+        <section aria-label="combinations">
+          <h2>Combinations</h2>
+          <div data-role="resultats"></div>
+        </section>
+
+        <section aria-label="envelopes" data-role="section-enveloppes" hidden>
+          <h2>Envelopes of effects</h2>
+          <div data-role="enveloppes"></div>
+        </section>
+
+        <section id="sorties" aria-label="outputs">
+          <h2>Outputs</h2>
+          <label><span>Project</span><input type="text" data-role="projet" /></label>
+          <label><span>Element</span><input type="text" data-role="element" placeholder="empty = Combinations of actions" /></label>
+          <div class="boutons">
+            <button type="button" data-action="exporter-csv">Combinations (CSV)</button>
+            <button type="button" data-action="exporter-xlsx">Combinations (Excel)</button>
+            <button type="button" data-action="exporter-note">Calculation note (printable HTML)</button>
+          </div>
+          <p class="note">
+            The CSV and the workbook have one row per combination and one column per action (its factor), then the
+            combined effects. The workbook has one sheet per family, one sheet of actions and one of envelopes.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        Part of the <a href="https://henri421.github.io/WebAedificium/">Aedificium</a> suite. Fully local calculation:
+        no data leaves the browser.
+      </p>
+    </footer>
+
+    <script type="module" src="../src/main.ts"></script>
+  </body>
+</html>

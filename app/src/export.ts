@@ -4,7 +4,8 @@
  */
 
 import { csv, notationTexte, nombreAffiche } from 'aedificium-ui';
-import { LIBELLES_FAMILLES, type ProfilCombinaisons } from '../../src/index';
+import type { ProfilCombinaisons } from '../../src/index';
+import { textes } from './textes';
 import { classeurXlsx, type Cellule, type Feuille } from './xlsx';
 import { famillesPresentes, lignesDuTableau, type Resultat } from './vue';
 
@@ -26,21 +27,23 @@ export function combinaisonsEnCsv(r: Resultat): string {
 
 /** Classeur : un onglet par famille, puis les actions et l'enveloppe. */
 export function combinaisonsEnXlsx(r: Resultat, profil: ProfilCombinaisons): Uint8Array {
+  const t = textes();
+  const e = t.entetes;
   const feuilles: Feuille[] = famillesPresentes(r.valeurs).map((f) => ({
-    nom: LIBELLES_FAMILLES[f].split(' (')[0],
+    nom: t.familles[f].split(' (')[0],
     lignes: lignesDuTableau(r, [f]).map((l) => l.map(enTexte)),
   }));
 
   feuilles.push({
-    nom: 'Actions',
+    nom: t.feuilles.actions,
     lignes: [
-      ['Id', 'Action', 'Nature', 'Catégorie', 'Groupe', 'psi_0', 'psi_1', 'psi_2'].map(enTexte) as Cellule[],
+      [e.id, e.action, e.nature, e.categorie, e.groupe, 'psi_0', 'psi_1', 'psi_2'].map(enTexte) as Cellule[],
       ...r.actions.map((a): Cellule[] => {
         const psi = a.nature === 'variable' ? profil.psi[a.categorie] : null;
         return [
           a.id,
           a.nom,
-          a.nature,
+          t.natures[a.nature],
           a.nature === 'variable' ? a.categorie : '',
           a.nature === 'variable' ? (a.groupe ?? '') : '',
           psi?.psi0.valeur ?? null,
@@ -53,12 +56,12 @@ export function combinaisonsEnXlsx(r: Resultat, profil: ProfilCombinaisons): Uin
 
   if (r.nomsEffets.length > 0) {
     feuilles.push({
-      nom: 'Enveloppes',
+      nom: t.feuilles.enveloppes,
       lignes: [
-        ['Famille', 'Extremum', ...r.nomsEffets.flatMap((n) => [n, `${n} : n°`])].map(enTexte) as Cellule[],
+        [e.famille, e.extremum, ...r.nomsEffets.flatMap((n) => [n, t.numeroDe(n)])].map(enTexte) as Cellule[],
         ...r.enveloppes.flatMap((env): Cellule[][] => [
-          [LIBELLES_FAMILLES[env.famille], 'max', ...env.max.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))].map(enTexte),
-          [LIBELLES_FAMILLES[env.famille], 'min', ...env.min.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))].map(enTexte),
+          [t.familles[env.famille], 'max', ...env.max.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))].map(enTexte),
+          [t.familles[env.famille], 'min', ...env.min.flatMap((e) => (e === null ? [null, null] : [e.valeur, e.numero]))].map(enTexte),
         ]),
       ],
     });

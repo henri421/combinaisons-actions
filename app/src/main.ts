@@ -6,10 +6,9 @@
  * mise en forme. L'ecran et la note appellent les memes fonctions de `vue`.
  */
 
-import { echapper, noteDeCalculHtml, notationHtml, ouvrirOuTelecharger, telecharger } from 'aedificium-ui';
+import { definirLangue, echapper, langueDuDocument, noteDeCalculHtml, notationHtml, ouvrirOuTelecharger, telecharger } from 'aedificium-ui';
 import {
   CATEGORIES,
-  LIBELLES_CATEGORIES,
   actionsClimatiques,
   combinerEffets,
   en1990Recommande,
@@ -22,7 +21,11 @@ import { identifiantLibre, lireModele, nomsDesEffets, relire, saisieParDefaut, s
 import { messageDErreur, rendreResultats, tableauActions, tableauEnveloppes, tableauGamma, type Resultat } from './vue';
 import { combinaisonsEnCsv, combinaisonsEnXlsx } from './export';
 import { noteDuCalcul } from './note';
+import { phrase, textes } from './textes';
 import './style.css';
+
+// La langue d'abord : tout rendu la lit (`index.html` ou `en/index.html`).
+definirLangue(langueDuDocument(document));
 
 const PROFIL = en1990Recommande();
 const CLE_STOCKAGE = 'combinaisons-actions/saisie';
@@ -89,35 +92,37 @@ function lireCartouche(): { projet: string; element: string } {
 // --- Editeur ----------------------------------------------------------------------
 
 function optionsCategorie(choisie: Categorie): string {
-  return CATEGORIES.map((c) => `<option value="${c}"${c === choisie ? ' selected' : ''}>${notationHtml(LIBELLES_CATEGORIES[c])}</option>`).join('');
+  return CATEGORIES.map((c) => `<option value="${c}"${c === choisie ? ' selected' : ''}>${notationHtml(textes().categories[c])}</option>`).join('');
 }
 
 function ligneEditeur(l: LigneAction, i: number, noms: string[]): string {
+  const t = textes();
   const champ = (nom: string, valeur: string, classe = '') =>
-    `<input type="text" class="${classe}" data-ligne="${i}" data-champ="${nom}" value="${echapper(valeur)}" aria-label="${nom}, action ${i + 1}" />`;
-  const nature = ['permanente', 'variable', 'accidentelle']
-    .map((n) => `<option value="${n}"${n === l.nature ? ' selected' : ''}>${n}</option>`)
+    `<input type="text" class="${classe}" data-ligne="${i}" data-champ="${nom}" value="${echapper(valeur)}" aria-label="${echapper(t.aria.champ(nom, i + 1))}" />`;
+  const nature = (['permanente', 'variable', 'accidentelle'] as const)
+    .map((n) => `<option value="${n}"${n === l.nature ? ' selected' : ''}>${t.natures[n]}</option>`)
     .join('');
   const detail =
     l.nature === 'variable'
-      ? `<select data-ligne="${i}" data-champ="categorie" aria-label="catégorie, action ${i + 1}">${optionsCategorie(l.categorie)}</select>`
+      ? `<select data-ligne="${i}" data-champ="categorie" aria-label="${echapper(t.aria.categorie(i + 1))}">${optionsCategorie(l.categorie)}</select>`
       : l.nature === 'permanente'
-        ? `<label class="case"><input type="checkbox" data-ligne="${i}" data-champ="peutEtreFavorable"${l.peutEtreFavorable ? ' checked' : ''} /><span>peut être favorable</span></label>`
+        ? `<label class="case"><input type="checkbox" data-ligne="${i}" data-champ="peutEtreFavorable"${l.peutEtreFavorable ? ' checked' : ''} /><span>${t.peutEtreFavorable}</span></label>`
         : '';
   const groupe = l.nature === 'variable' ? champ('groupe', l.groupe) : '';
   const effets = noms.map((_, k) => `<td>${champ(`effet-${k}`, l.effets[k] ?? '', 'effet')}</td>`).join('');
   return (
     `<tr><td>${champ('id', l.id, 'id')}</td><td>${champ('nom', l.nom)}</td>` +
-    `<td><select data-ligne="${i}" data-champ="nature" data-structure="1" aria-label="nature, action ${i + 1}">${nature}</select></td>` +
+    `<td><select data-ligne="${i}" data-champ="nature" data-structure="1" aria-label="${echapper(t.aria.nature(i + 1))}">${nature}</select></td>` +
     `<td>${detail}</td><td>${groupe}</td>${effets}` +
-    `<td><button type="button" class="retirer" data-action="retirer" data-ligne="${i}" aria-label="retirer l'action ${i + 1}">×</button></td></tr>`
+    `<td><button type="button" class="retirer" data-action="retirer" data-ligne="${i}" aria-label="${echapper(t.aria.retirer(i + 1))}">×</button></td></tr>`
   );
 }
 
 function rendreEditeur(): void {
   const noms = nomsDesEffets(saisie);
+  const e = textes().entetes;
   zones.editeur.innerHTML =
-    '<table class="actions"><thead><tr><th>Id</th><th>Nom</th><th>Nature</th><th>Catégorie</th><th>Groupe</th>' +
+    `<table class="actions"><thead><tr><th>${e.id}</th><th>${e.nom}</th><th>${e.nature}</th><th>${e.categorie}</th><th>${e.groupe}</th>` +
     noms.map((n) => `<th>${notationHtml(n)}</th>`).join('') +
     '<th></th></tr></thead><tbody>' +
     saisie.actions.map((l, i) => ligneEditeur(l, i, noms)).join('') +
@@ -274,7 +279,7 @@ document.addEventListener('click', (evenement) => {
   }
 
   if (!action.startsWith('exporter-')) return;
-  if (dernier === null) return montrerErreur('Aucune combinaison valide à exporter : corriger la saisie.');
+  if (dernier === null) return montrerErreur(textes().messages.rienAExporter);
   const date = new Date().toISOString().slice(0, 10);
   if (action === 'exporter-csv') {
     telecharger('combinaisons.csv', combinaisonsEnCsv(dernier), 'text/csv;charset=utf-8');
@@ -313,11 +318,11 @@ exige<HTMLInputElement>('[data-role="importer"]').addEventListener('change', asy
     // Les actions importees remplacent la neige et le vent deja saisis.
     saisie.actions = saisie.actions.filter((a) => !(a.nature === 'variable' && (a.categorie === 'vent' || a.categorie === 'neige' || a.categorie === 'neige-haute')));
     for (const a of r.actions) {
-      saisie.actions.push({ id: a.id, nom: a.nom, nature: 'variable', categorie: a.categorie, groupe: a.groupe ?? '', peutEtreFavorable: false, effets: [] });
+      saisie.actions.push({ id: a.id, nom: phrase(a.nom), nature: 'variable', categorie: a.categorie, groupe: a.groupe ?? '', peutEtreFavorable: false, effets: [] });
     }
     rendreEditeur();
     recalculer();
-    if (r.ignores.length > 0) montrerErreur(r.ignores.join(' '));
+    if (r.ignores.length > 0) montrerErreur(r.ignores.map(phrase).join(' '));
   } catch (err) {
     montrerErreur(messageDErreur(err));
   }

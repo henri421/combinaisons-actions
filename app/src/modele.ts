@@ -15,6 +15,7 @@ import {
   type Effets,
   type Options,
 } from '../../src/index';
+import { textes } from './textes';
 
 export type Nature = 'permanente' | 'variable' | 'accidentelle';
 
@@ -38,12 +39,13 @@ export interface Saisie {
 }
 
 export function saisieParDefaut(): Saisie {
+  const n = textes().actionsParDefaut;
   return {
     actions: [
-      { id: 'G', nom: 'Poids propre et charges permanentes', nature: 'permanente', categorie: 'A', groupe: '', peutEtreFavorable: false, effets: ['', ''] },
-      { id: 'Q', nom: 'Exploitation, bureaux', nature: 'variable', categorie: 'B', groupe: '', peutEtreFavorable: false, effets: ['', ''] },
-      { id: 'S', nom: 'Neige', nature: 'variable', categorie: 'neige', groupe: '', peutEtreFavorable: false, effets: ['', ''] },
-      { id: 'W', nom: 'Vent', nature: 'variable', categorie: 'vent', groupe: '', peutEtreFavorable: false, effets: ['', ''] },
+      { id: 'G', nom: n.G, nature: 'permanente', categorie: 'A', groupe: '', peutEtreFavorable: false, effets: ['', ''] },
+      { id: 'Q', nom: n.Q, nature: 'variable', categorie: 'B', groupe: '', peutEtreFavorable: false, effets: ['', ''] },
+      { id: 'S', nom: n.S, nature: 'variable', categorie: 'neige', groupe: '', peutEtreFavorable: false, effets: ['', ''] },
+      { id: 'W', nom: n.W, nature: 'variable', categorie: 'vent', groupe: '', peutEtreFavorable: false, effets: ['', ''] },
     ],
     nomsEffets: '',
     options: { ...OPTIONS_PAR_DEFAUT },
@@ -67,22 +69,23 @@ export function lireModele(saisie: Saisie): Lecture {
   const noms = nomsDesEffets(saisie);
   const actions: Action[] = [];
   const effets: Effets = {};
+  const m = textes().messages;
   try {
     saisie.actions.forEach((l, i) => {
       const id = l.id.trim();
-      if (id === '') throw new Error(`Action ${i + 1} : identifiant vide.`);
+      if (id === '') throw new Error(m.identifiantVide(i + 1));
       const nom = l.nom.trim() === '' ? id : l.nom.trim();
       if (l.nature === 'permanente') actions.push({ id, nom, nature: 'permanente', peutEtreFavorable: l.peutEtreFavorable });
       else if (l.nature === 'accidentelle') actions.push({ id, nom, nature: 'accidentelle' });
       else {
-        if (!CATEGORIES.includes(l.categorie)) throw new Error(`Action ${id} : catégorie inconnue.`);
+        if (!CATEGORIES.includes(l.categorie)) throw new Error(m.categorieInconnue(id));
         actions.push({ id, nom, nature: 'variable', categorie: l.categorie, ...(l.groupe.trim() !== '' ? { groupe: l.groupe.trim() } : {}) });
       }
       effets[id] = noms.map((n, k) => {
         const brut = (l.effets[k] ?? '').trim();
         if (brut === '') return null;
         const v = lireNombre(brut);
-        if (v === null || !Number.isFinite(v)) throw new Error(`Action ${id}, effet ${n} : nombre attendu, reçu « ${brut} ».`);
+        if (v === null || !Number.isFinite(v)) throw new Error(m.nombreAttendu(id, n, brut));
         return v;
       });
     });
@@ -111,7 +114,7 @@ export function serialiser(saisie: Saisie): string {
 /** Relit un document enregistre ; leve si le format n'est pas reconnu. */
 export function relire(texte: string): Saisie {
   const brut = JSON.parse(texte) as Record<string, unknown>;
-  if (brut.format !== FORMAT) throw new Error(`Fichier de format ${JSON.stringify(brut.format)} : attendu ${FORMAT}.`);
+  if (brut.format !== FORMAT) throw new Error(textes().messages.format(JSON.stringify(brut.format), FORMAT));
   const defaut = saisieParDefaut();
   const actions = Array.isArray(brut.actions) ? (brut.actions as LigneAction[]) : [];
   return {
