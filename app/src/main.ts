@@ -6,7 +6,7 @@
  * mise en forme. L'ecran et la note appellent les memes fonctions de `vue`.
  */
 
-import { definirLangue, echapper, langueDuDocument, noteDeCalculHtml, notationHtml, ouvrirOuTelecharger, telecharger } from 'aedificium-ui';
+import { brancherFeuilles, definirLangue, echapper, langueDuDocument, noteDeCalculHtml, notationHtml, ouvrirOuTelecharger, telecharger, type BarreFeuilles, type Json } from 'aedificium-ui';
 import {
   CATEGORIES,
   actionsClimatiques,
@@ -54,6 +54,12 @@ const champProjet = exige<HTMLInputElement>('[data-role="projet"]');
 const champElement = exige<HTMLInputElement>('[data-role="element"]');
 
 let saisie: Saisie = charger() ?? saisieParDefaut();
+
+/**
+ * Feuilles de calcul d'un projet de la suite. Dans un projet, chaque saisie
+ * va dans la feuille courante, pas dans la memoire « hors projet » de l'app.
+ */
+let barre: BarreFeuilles | null = null;
 let dernier: Resultat | null = null;
 
 // --- Stockage local ---------------------------------------------------------------
@@ -151,7 +157,8 @@ function montrerErreur(message: string | null): void {
  * resultat valide, sous une erreur bien visible.
  */
 function recalculer(): void {
-  memoriser();
+  if (barre?.dansUnProjet()) barre.signaler();
+  else memoriser();
   const lecture = lireModele(saisie);
   if (!lecture.ok) return montrerErreur(lecture.message);
   try {
@@ -331,6 +338,19 @@ exige<HTMLInputElement>('[data-role="importer"]').addEventListener('change', asy
 const cartouche = lireCartouche();
 champProjet.value = cartouche.projet;
 champElement.value = cartouche.element;
+
+barre = brancherFeuilles({
+  app: 'combinaisons-actions',
+  nomApp: exige<HTMLElement>('header h1').textContent ?? 'combinaisons-actions',
+  conteneur: exige<HTMLElement>('[data-role="feuilles"]'),
+  lire: () => JSON.parse(serialiser(saisie)) as Json,
+  charger: (d) => {
+    saisie = d === null ? saisieParDefaut() : relire(JSON.stringify(d));
+    ecrireOptions();
+    rendreEditeur();
+    recalculer();
+  },
+});
 
 ecrireOptions();
 rendreEditeur();
