@@ -12,6 +12,7 @@ import { combinerEffets, en1990Recommande, enveloppes, genererCombinaisons, OPTI
 import { lireModele, saisieParDefaut } from '../../app/src/modele';
 import { famillesPresentes, lignesDuTableau, type Resultat } from '../../app/src/vue';
 import { HYPOTHESES, noteDuCalcul, optionsEnTexte } from '../../app/src/note';
+import { VERSION_OUTIL } from '../../app/src/version';
 
 const P = en1990Recommande();
 const lire = (chemin: string): string => readFileSync(fileURLToPath(new URL(chemin, import.meta.url)), 'utf8');
@@ -44,7 +45,7 @@ const html = noteDeCalculHtml(note);
 
 describe('cartouche', () => {
   it('projet, element, date, norme et outil', () => {
-    expect(note.cartouche).toEqual({ ...CARTOUCHE, norme: 'EN 1990:2002, annexe A1', outil: 'combinaisons-actions' });
+    expect(note.cartouche).toEqual({ ...CARTOUCHE, version: VERSION_OUTIL, norme: 'EN 1990:2002, annexe A1', outil: 'combinaisons-actions' });
   });
 
   it("element vide : Combinaisons d'actions", () => {

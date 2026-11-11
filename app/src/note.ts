@@ -10,6 +10,7 @@ import { nombreAffiche, type ElementNote, type NoteDeCalcul } from 'aedificium-u
 import type { Action, Famille, Options, ProfilCombinaisons } from '../../src/index';
 import { phrase, textes } from './textes';
 import { famillesPresentes, formule, natureDe, type Resultat } from './vue';
+import { VERSION_OUTIL } from './version';
 
 /** Hypotheses de la note, en francais (reference des tests). La note lit `textes()`. */
 export const HYPOTHESES = textes().note.hypotheses;
@@ -97,6 +98,7 @@ export function noteDuCalcul(
   const enveloppe = tableauEnveloppesNote(r);
   return {
     cartouche: {
+      version: VERSION_OUTIL,
       projet: cartouche.projet,
       element: cartouche.element.trim() === '' ? t.note.element : cartouche.element,
       date: cartouche.date,
