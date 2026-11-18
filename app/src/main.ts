@@ -6,7 +6,7 @@
  * mise en forme. L'ecran et la note appellent les memes fonctions de `vue`.
  */
 
-import { brancherFeuilles, definirLangue, echapper, langueDuDocument, noteDeCalculHtml, notationHtml, ouvrirOuTelecharger, telecharger, type BarreFeuilles, type Json } from 'aedificium-ui';
+import { avertissementAnnexeLu, brancherFeuilles, definirLangue, echapper, langueDuDocument, lireAnnexe, noteDeCalculHtml, notationHtml, optionsAnnexe, ouvrirOuTelecharger, telecharger, type AnnexeNationale, type BarreFeuilles, type Json } from 'aedificium-ui';
 import {
   CATEGORIES,
   actionsClimatiques,
@@ -16,7 +16,9 @@ import {
   genererCombinaisons,
   type Categorie,
   type Options,
+  type ProfilCombinaisons,
 } from '../../src/index';
+import { champsCoefficientsHtml, coefficientsEnChaines } from './annexe';
 import { identifiantLibre, lireModele, nomsDesEffets, relire, saisieParDefaut, serialiser, type LigneAction, type Nature, type Saisie } from './modele';
 import { messageDErreur, rendreResultats, tableauActions, tableauEnveloppes, tableauGamma, type Resultat } from './vue';
 import { combinaisonsEnCsv, combinaisonsEnXlsx } from './export';
@@ -27,7 +29,9 @@ import './style.css';
 // La langue d'abord : tout rendu la lit (`index.html` ou `en/index.html`).
 definirLangue(langueDuDocument(document));
 
-const PROFIL = en1990Recommande();
+/** Profil et annexe du dernier calcul valide : ce que lisent l'ecran, le classeur et la note. */
+let profilCourant: ProfilCombinaisons = en1990Recommande();
+let annexeCourante: AnnexeNationale = 'recommande';
 const CLE_STOCKAGE = 'combinaisons-actions/saisie';
 const CLE_CARTOUCHE = 'combinaisons-actions:cartouche';
 
@@ -52,6 +56,7 @@ const categorieNeige = exige<HTMLSelectElement>('[data-role="categorie-neige"]')
 const sectionSorties = exige<HTMLElement>('#sorties');
 const champProjet = exige<HTMLInputElement>('[data-role="projet"]');
 const champElement = exige<HTMLInputElement>('[data-role="element"]');
+const bandeauAnnexe = exige<HTMLElement>('[data-role="bandeau-annexe"]');
 
 let saisie: Saisie = charger() ?? saisieParDefaut();
 
@@ -135,8 +140,28 @@ function rendreEditeur(): void {
     '</tbody></table>';
 }
 
+/** Champs de l'annexe : options du choix et tableau des coefficients (valeurs posees par `ecrireAnnexe`). */
+function rendreCoefficients(): void {
+  exige<HTMLSelectElement>('[data-champ="annexe"]').innerHTML = optionsAnnexe(saisie.annexe);
+  exige<HTMLElement>('[data-role="coefficients"]').innerHTML = champsCoefficientsHtml();
+}
+
+/** Annexe et coefficients : le choix d'annexe et chaque coefficient reprennent la saisie. */
+function ecrireAnnexe(): void {
+  exige<HTMLSelectElement>('[data-champ="annexe"]').value = saisie.annexe;
+  for (const e of formulaire.querySelectorAll<HTMLInputElement>('[data-coef]')) e.value = saisie.coefficients[e.dataset.coef ?? ''] ?? '';
+}
+
+/** Bandeau de l'annexe luxembourgeoise : visible tant que ses valeurs ne sont pas lues. */
+function montrerBandeau(): void {
+  const texte = saisie.annexe === 'lu' ? avertissementAnnexeLu() : '';
+  bandeauAnnexe.textContent = texte;
+  bandeauAnnexe.hidden = texte === '';
+}
+
 function ecrireOptions(): void {
   champEffets.value = saisie.nomsEffets;
+  ecrireAnnexe();
   for (const e of formulaire.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-option]')) {
     const cle = e.dataset.option as keyof Options;
     const v = saisie.options[cle];
@@ -159,18 +184,21 @@ function montrerErreur(message: string | null): void {
 function recalculer(): void {
   if (barre?.dansUnProjet()) barre.signaler();
   else memoriser();
+  montrerBandeau();
   const lecture = lireModele(saisie);
   if (!lecture.ok) return montrerErreur(lecture.message);
   try {
-    const combinaisons = genererCombinaisons(lecture.actions, lecture.options, PROFIL);
+    const combinaisons = genererCombinaisons(lecture.actions, lecture.options, lecture.profil);
     const valeurs = combinerEffets(combinaisons, lecture.effets, lecture.nomsEffets.length);
     dernier = { actions: lecture.actions, nomsEffets: lecture.nomsEffets, effets: lecture.effets, valeurs, enveloppes: enveloppes(valeurs, lecture.nomsEffets.length) };
   } catch (e) {
     return montrerErreur(messageDErreur(e));
   }
+  profilCourant = lecture.profil;
+  annexeCourante = lecture.annexe;
   montrerErreur(null);
-  zones.actions.innerHTML = tableauActions(dernier.actions, PROFIL);
-  zones.gamma.innerHTML = tableauGamma(PROFIL);
+  zones.actions.innerHTML = tableauActions(dernier.actions, profilCourant);
+  zones.gamma.innerHTML = tableauGamma(profilCourant);
   zones.resultats.innerHTML = rendreResultats(dernier);
   const env = tableauEnveloppes(dernier);
   zones.sectionEnveloppes.hidden = env === '';
@@ -187,6 +215,18 @@ formulaire.addEventListener('input', (evenement) => {
     const cle = cible.dataset.option as keyof Options;
     const valeur = cible instanceof HTMLInputElement && cible.type === 'checkbox' ? cible.checked : cible.value;
     saisie.options = { ...saisie.options, [cle]: valeur } as Options;
+    return recalculer();
+  }
+
+  // Annexe : chaque coefficient reprend la valeur de la nouvelle annexe, puis reste modifiable.
+  if (cible.dataset.champ === 'annexe' && cible instanceof HTMLSelectElement) {
+    saisie.annexe = lireAnnexe(cible.value);
+    saisie.coefficients = coefficientsEnChaines(saisie.annexe);
+    ecrireAnnexe();
+    return recalculer();
+  }
+  if (cible.dataset.coef !== undefined) {
+    saisie.coefficients = { ...saisie.coefficients, [cible.dataset.coef]: cible.value };
     return recalculer();
   }
 
@@ -291,10 +331,10 @@ document.addEventListener('click', (evenement) => {
   if (action === 'exporter-csv') {
     telecharger('combinaisons.csv', combinaisonsEnCsv(dernier), 'text/csv;charset=utf-8');
   } else if (action === 'exporter-xlsx') {
-    telechargerOctets('combinaisons.xlsx', combinaisonsEnXlsx(dernier, PROFIL), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    telechargerOctets('combinaisons.xlsx', combinaisonsEnXlsx(dernier, profilCourant), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   } else if (action === 'exporter-note') {
     const cartouche = { projet: champProjet.value, element: champElement.value, date };
-    ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(noteDuCalcul(PROFIL, dernier, saisie.options, cartouche)));
+    ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(noteDuCalcul(profilCourant, dernier, saisie.options, cartouche, annexeCourante)));
   }
 });
 
@@ -352,6 +392,7 @@ barre = brancherFeuilles({
   },
 });
 
+rendreCoefficients();
 ecrireOptions();
 rendreEditeur();
 recalculer();

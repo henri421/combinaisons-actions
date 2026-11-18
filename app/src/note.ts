@@ -6,9 +6,10 @@
  * n'a pas de conclusions.
  */
 
-import { nombreAffiche, type ElementNote, type NoteDeCalcul } from 'aedificium-ui';
+import { avertissementAnnexeLu, libelleAnnexe, nombreAffiche, type AnnexeNationale, type ElementNote, type NoteDeCalcul } from 'aedificium-ui';
 import type { Action, Famille, Options, ProfilCombinaisons } from '../../src/index';
-import { phrase, textes } from './textes';
+import { coefficientsDuProfil } from './annexe';
+import { phrase, sourceAffichee, textes } from './textes';
 import { famillesPresentes, formule, natureDe, type Resultat } from './vue';
 import { VERSION_OUTIL } from './version';
 
@@ -35,8 +36,23 @@ export function lignesActions(actions: readonly Action[], profil: ProfilCombinai
 
 /** Lignes des coefficients partiels : celles de `tableauGamma`. */
 export function lignesGamma(profil: ProfilCombinaisons): string[][] {
-  const ligne = (nom: string, j: ProfilCombinaisons['jeuA']): string[] => [nom, coef(j.gammaGSup.valeur), coef(j.gammaGInf.valeur), coef(j.gammaQ.valeur), phrase(j.gammaQ.source)];
-  return [ligne('A, EQU', profil.jeuA), ligne('B, STR/GEO', profil.jeuB), ligne('C, GEO', profil.jeuC), ['xi (6.10b)', coef(profil.xi.valeur), '', '', phrase(profil.xi.source)]];
+  const ligne = (nom: string, j: ProfilCombinaisons['jeuA']): string[] => [nom, coef(j.gammaGSup.valeur), coef(j.gammaGInf.valeur), coef(j.gammaQ.valeur), sourceAffichee(j.gammaQ.source)];
+  return [ligne('A, EQU', profil.jeuA), ligne('B, STR/GEO', profil.jeuB), ligne('C, GEO', profil.jeuC), ['xi (6.10b)', coef(profil.xi.valeur), '', '', sourceAffichee(profil.xi.source)]];
+}
+
+/**
+ * Bloc des coefficients de l'annexe : chaque coefficient, son libelle, sa source
+ * (la valeur imposee par l'utilisateur y est marquee) et sa valeur.
+ */
+export function blocCoefficients(profil: ProfilCombinaisons, annexe: AnnexeNationale): ElementNote {
+  return {
+    type: 'bloc',
+    bloc: {
+      titre: textes().annexe.bloc(libelleAnnexe(annexe)),
+      lignes: coefficientsDuProfil(profil).map((c) => ({ symbole: c.symbole, libelle: `${c.libelle} (${sourceAffichee(c.source)})`, valeur: nombreAffiche(c.valeur, 3) })),
+      note: null,
+    },
+  };
 }
 
 /** Tableau d'une famille : celui de `tableauFamille`. */
@@ -90,25 +106,28 @@ export function noteDuCalcul(
   profil: ProfilCombinaisons,
   r: Resultat,
   options: Options,
-  cartouche: { projet: string; element: string; date: string }
+  cartouche: { projet: string; element: string; date: string },
+  annexe: AnnexeNationale = 'recommande'
 ): NoteDeCalcul {
   const t = textes();
   const e = t.entetes;
   const effets = tableauEffets(r);
   const enveloppe = tableauEnveloppesNote(r);
+  const lu = annexe === 'lu';
   return {
     cartouche: {
       version: VERSION_OUTIL,
       projet: cartouche.projet,
       element: cartouche.element.trim() === '' ? t.note.element : cartouche.element,
       date: cartouche.date,
-      norme: t.note.norme,
+      norme: lu ? `${t.note.norme}${t.annexe.normeLu}` : t.note.norme,
       outil: 'combinaisons-actions',
     },
     sections: {
       hypotheses: [
         { type: 'texte', texte: t.note.profil(phrase(profil.nom), profil.date) },
         { type: 'tableau', titre: t.note.coefficients, entetes: [e.jeu, 'gamma_G,sup', 'gamma_G,inf', 'gamma_Q', e.source], lignes: lignesGamma(profil) },
+        blocCoefficients(profil, annexe),
         { type: 'liste', items: optionsEnTexte(options) },
         { type: 'liste', items: t.note.hypotheses },
       ],
@@ -120,5 +139,6 @@ export function noteDuCalcul(
       calculs: enveloppe === null ? [] : [enveloppe],
     },
     verifications: [],
+    avertissements: lu ? [avertissementAnnexeLu()].filter((a) => a !== '') : [],
   };
 }

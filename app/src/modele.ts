@@ -6,7 +6,7 @@
  * saisie invalide est refusee, en nommant le champ.
  */
 
-import { lireNombre } from 'aedificium-ui';
+import { lireAnnexe, lireNombre, nombreAffiche, type AnnexeNationale } from 'aedificium-ui';
 import {
   CATEGORIES,
   OPTIONS_PAR_DEFAUT,
@@ -14,7 +14,9 @@ import {
   type Categorie,
   type Effets,
   type Options,
+  type ProfilCombinaisons,
 } from '../../src/index';
+import { CLES_COEFFICIENTS, coefficientsEnChaines, profilDeCalcul } from './annexe';
 import { textes } from './textes';
 
 export type Nature = 'permanente' | 'variable' | 'accidentelle';
@@ -36,6 +38,10 @@ export interface Saisie {
   /** Noms des effets, separes par des points-virgules (« N ; M »). Vide : aucun effet. */
   nomsEffets: string;
   options: Options;
+  /** Annexe nationale : valeurs recommandees ou Luxembourg (lot E). */
+  annexe: AnnexeNationale;
+  /** Coefficients du profil, en chaines saisies : une par cle de `CLES_COEFFICIENTS`. */
+  coefficients: Record<string, string>;
 }
 
 export function saisieParDefaut(): Saisie {
@@ -49,6 +55,8 @@ export function saisieParDefaut(): Saisie {
     ],
     nomsEffets: '',
     options: { ...OPTIONS_PAR_DEFAUT },
+    annexe: 'recommande',
+    coefficients: coefficientsEnChaines('recommande'),
   };
 }
 
@@ -61,7 +69,7 @@ export function nomsDesEffets(saisie: Saisie): string[] {
 }
 
 export type Lecture =
-  | { ok: true; actions: Action[]; effets: Effets; nomsEffets: string[]; options: Options }
+  | { ok: true; actions: Action[]; effets: Effets; nomsEffets: string[]; options: Options; annexe: AnnexeNationale; profil: ProfilCombinaisons }
   | { ok: false; message: string };
 
 /** Convertit la saisie en donnees du noyau, ou rend le motif du refus. */
@@ -70,6 +78,7 @@ export function lireModele(saisie: Saisie): Lecture {
   const actions: Action[] = [];
   const effets: Effets = {};
   const m = textes().messages;
+  let profil: ProfilCombinaisons;
   try {
     saisie.actions.forEach((l, i) => {
       const id = l.id.trim();
@@ -89,10 +98,11 @@ export function lireModele(saisie: Saisie): Lecture {
         return v;
       });
     });
+    profil = profilDeCalcul(saisie.annexe, saisie.coefficients);
   } catch (e) {
     return { ok: false, message: e instanceof Error ? e.message : String(e) };
   }
-  return { ok: true, actions, effets, nomsEffets: noms, options: saisie.options };
+  return { ok: true, actions, effets, nomsEffets: noms, options: saisie.options, annexe: saisie.annexe, profil };
 }
 
 /** Prochain identifiant libre pour une nature : G1, G2... Q1... A1... */
@@ -116,6 +126,15 @@ export function relire(texte: string): Saisie {
   const brut = JSON.parse(texte) as Record<string, unknown>;
   if (brut.format !== FORMAT) throw new Error(textes().messages.format(JSON.stringify(brut.format), FORMAT));
   const defaut = saisieParDefaut();
+  const annexe = lireAnnexe(brut.annexe);
+  // Un fichier sans annexe ni coefficients (ancien format) : valeurs de l'annexe par defaut.
+  const saisis = typeof brut.coefficients === 'object' && brut.coefficients !== null ? (brut.coefficients as Record<string, unknown>) : {};
+  const coefficients = coefficientsEnChaines(annexe);
+  for (const cle of CLES_COEFFICIENTS) {
+    const x = saisis[cle];
+    if (typeof x === 'string') coefficients[cle] = x;
+    else if (typeof x === 'number' && Number.isFinite(x)) coefficients[cle] = nombreAffiche(x, 3);
+  }
   const actions = Array.isArray(brut.actions) ? (brut.actions as LigneAction[]) : [];
   return {
     actions: actions.map((a) => ({
@@ -129,5 +148,7 @@ export function relire(texte: string): Saisie {
     })),
     nomsEffets: typeof brut.nomsEffets === 'string' ? brut.nomsEffets : '',
     options: { ...defaut.options, ...(typeof brut.options === 'object' && brut.options !== null ? (brut.options as Partial<Options>) : {}) },
+    annexe,
+    coefficients,
   };
 }

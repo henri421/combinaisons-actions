@@ -18,7 +18,7 @@ import {
   type ProfilCombinaisons,
   type ValeurCombinee,
 } from '../../src/index';
-import { phrase, textes } from './textes';
+import { phrase, sourceAffichee, textes } from './textes';
 
 /** Resultat complet d'un calcul, tel que l'ecran et les sorties le lisent. */
 export interface Resultat {
@@ -85,7 +85,7 @@ export function tableauActions(actions: readonly Action[], profil: ProfilCombina
 export function tableauGamma(profil: ProfilCombinaisons): string {
   const ligne = (nom: string, j: ProfilCombinaisons['jeuA']) =>
     `<tr><td>${notationHtml(nom)}</td><td class="valeur">${nombreAffiche(j.gammaGSup.valeur, 2)}</td><td class="valeur">${nombreAffiche(j.gammaGInf.valeur, 2)}</td>` +
-    `<td class="valeur">${nombreAffiche(j.gammaQ.valeur, 2)}</td><td class="clause">${notationHtml(phrase(j.gammaQ.source))}</td></tr>`;
+    `<td class="valeur">${nombreAffiche(j.gammaQ.valeur, 2)}</td><td class="clause">${notationHtml(sourceAffichee(j.gammaQ.source))}</td></tr>`;
   const e = textes().entetes;
   return (
     `<div class="defilement"><table class="zones"><thead><tr><th>${e.jeu}</th>` +
@@ -93,7 +93,7 @@ export function tableauGamma(profil: ProfilCombinaisons): string {
     ligne('A, EQU', profil.jeuA) +
     ligne('B, STR/GEO', profil.jeuB) +
     ligne('C, GEO', profil.jeuC) +
-    `<tr><td>${notationHtml('xi (6.10b)')}</td><td class="valeur">${nombreAffiche(profil.xi.valeur, 2)}</td><td></td><td></td><td class="clause">${notationHtml(phrase(profil.xi.source))}</td></tr>` +
+    `<tr><td>${notationHtml('xi (6.10b)')}</td><td class="valeur">${nombreAffiche(profil.xi.valeur, 2)}</td><td></td><td></td><td class="clause">${notationHtml(sourceAffichee(profil.xi.source))}</td></tr>` +
     '</tbody></table></div>'
   );
 }

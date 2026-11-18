@@ -93,6 +93,19 @@
           </fieldset>
 
           <fieldset>
+            <legend>National annex and coefficients</legend>
+            <p class="note">
+              Each annex pre-fills the coefficients; each one stays editable. A changed value is marked
+              “value imposed by the user” in the note.
+            </p>
+            <label
+              ><span>National annex</span><select data-champ="annexe"></select
+            ></label>
+            <p class="avertissement" data-role="bandeau-annexe" hidden></p>
+            <div data-role="coefficients"></div>
+          </fieldset>
+
+          <fieldset>
             <legend>Import from charges-climatiques</legend>
             <p class="note">
               The “Actions (JSON)” file of the charges-climatiques tool: each snow and wind case becomes a variable

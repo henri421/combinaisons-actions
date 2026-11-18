@@ -11,7 +11,7 @@
  * `phrase()` AU MOMENT DU RENDU, apres `definirLangue` (main.ts).
  */
 
-import { langueCourante, traducteur } from 'aedificium-ui';
+import { langueCourante, traducteur, traduireSource } from 'aedificium-ui';
 import { LIBELLES_CATEGORIES, LIBELLES_FAMILLES, type Categorie, type Famille, type Options } from '../../src/index';
 
 type Nature = 'permanente' | 'variable' | 'accidentelle';
@@ -49,6 +49,16 @@ const FR = {
     categorie: (i: number) => `catégorie, action ${i}`,
     nature: (i: number) => `nature, action ${i}`,
     retirer: (i: number) => `retirer l'action ${i}`,
+  },
+  annexe: {
+    legende: 'Annexe nationale et coefficients',
+    aide: 'Chaque annexe préremplit les coefficients ; chacun reste modifiable. Une valeur changée est marquée « valeur imposée par l’utilisateur » dans la note.',
+    annexe: 'Annexe nationale',
+    jeu: (nom: string) => `Jeu ${nom}`,
+    xi: 'Réduction des permanentes défavorables (6.10b)',
+    bloc: (libelle: string) => `Coefficients : ${libelle}`,
+    attendu: (libelle: string, brut: string) => `Coefficient ${libelle} : nombre attendu, reçu « ${brut} ».`,
+    normeLu: ', ILNAS-EN 1990/AN-LU:2020',
   },
   feuilles: { actions: 'Actions', enveloppes: 'Enveloppes' },
   actionsParDefaut: {
@@ -149,6 +159,16 @@ const EN: Textes = {
     nature: (i: number) => `nature, action ${i}`,
     retirer: (i: number) => `remove action ${i}`,
   },
+  annexe: {
+    legende: 'National annex and coefficients',
+    aide: 'Each annex pre-fills the coefficients; each one stays editable. A changed value is marked “value imposed by the user” in the note.',
+    annexe: 'National annex',
+    jeu: (nom: string) => `Set ${nom}`,
+    xi: 'Reduction of unfavourable permanent actions (6.10b)',
+    bloc: (libelle: string) => `Coefficients: ${libelle}`,
+    attendu: (libelle: string, brut: string) => `Coefficient ${libelle}: number expected, got “${brut}”.`,
+    normeLu: ', ILNAS-EN 1990/AN-LU:2020',
+  },
   feuilles: { actions: 'Actions', enveloppes: 'Envelopes' },
   actionsParDefaut: {
     G: 'Self-weight and permanent loads',
@@ -194,6 +214,14 @@ const EN: Textes = {
   },
 };
 
+/**
+ * Source d'un profil telle qu'elle s'affiche : phrase du noyau, puis traduction
+ * des sources de l'annexe (`traduireSource`). Intacte en francais.
+ */
+export function sourceAffichee(source: string): string {
+  return traduireSource(phrase(source));
+}
+
 /** Les textes de la langue courante. */
 export function textes(): Textes {
   return langueCourante() === 'en' ? EN : FR;
@@ -210,6 +238,7 @@ const EXACTES: Record<string, string> = {
   'Combinaisons accidentelles demandées, mais aucune action accidentelle saisie.':
     'Accidental combinations requested, but no accidental action entered.',
   "Import : le fichier n'est pas un JSON lisible.": 'Import: the file is not readable JSON.',
+  'Luxembourg, ILNAS-EN 1990/AN-LU:2020 (valeurs présumées, à vérifier)': 'Luxembourg, ILNAS-EN 1990/AN-LU:2020 (presumed values, to be checked)',
 };
 
 /**
