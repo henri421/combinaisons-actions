@@ -6,7 +6,7 @@
  * mise en forme. L'ecran et la note appellent les memes fonctions de `vue`.
  */
 
-import { avertissementAnnexeLu, brancherFeuilles, definirLangue, echapper, langueDuDocument, lireAnnexe, noteDeCalculHtml, notationHtml, optionsAnnexe, ouvrirOuTelecharger, telecharger, type AnnexeNationale, type BarreFeuilles, type Json } from 'aedificium-ui';
+import { avertissementAnnexeLu, brancherFeuilles, definirLangue, echapper, langueDuDocument, lireAnnexe, noteDeCalculHtml, telechargerNotePdf, notationHtml, optionsAnnexe, ouvrirOuTelecharger, telecharger, type AnnexeNationale, type BarreFeuilles, type Json } from 'aedificium-ui';
 import {
   CATEGORIES,
   actionsClimatiques,
@@ -332,9 +332,12 @@ document.addEventListener('click', (evenement) => {
     telecharger('combinaisons.csv', combinaisonsEnCsv(dernier), 'text/csv;charset=utf-8');
   } else if (action === 'exporter-xlsx') {
     telechargerOctets('combinaisons.xlsx', combinaisonsEnXlsx(dernier, profilCourant), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  } else if (action === 'exporter-note') {
+  } else if (action === 'exporter-note' || action === 'exporter-note-pdf') {
     const cartouche = { projet: champProjet.value, element: champElement.value, date };
-    ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(noteDuCalcul(profilCourant, dernier, saisie.options, cartouche, annexeCourante)));
+    const noteCalc = noteDuCalcul(profilCourant, dernier, saisie.options, cartouche, annexeCourante);
+    // PDF construit au clic ; en cas d'echec, la note HTML prend le relais.
+    if (action === 'exporter-note-pdf') void telechargerNotePdf('combinaisons-note.pdf', noteCalc, '').catch(() => ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(noteCalc)));
+    else ouvrirOuTelecharger('combinaisons-note.html', noteDeCalculHtml(noteCalc));
   }
 });
 
